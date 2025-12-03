@@ -1,0 +1,53 @@
+# Sets up a development environment for the chip-in-inventory application.
+#
+# Services:
+#   - chip-in-inventory: The main Rust application, built from the local Dockerfile.
+#   - etcd: The etcd datastore used as the backend.
+#   - importer: A one-shot service to populate the DB with sample data.
+#
+# Usage: docker-compose up
+# The API is available at http://localhost:3000.
+
+services:
+  # The Rust API server
+  chip-in-inventory:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      # Set the etcd endpoint to the service name 'etcd' within the Docker network
+      - ETCD_ENDPOINTS=http://etcd:2379
+      # Set the log level
+      - RUST_LOG=info
+    depends_on:
+      - etcd
+
+  # One-shot service to import initial data from sample.yaml
+  importer:
+    image: python:3.9-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      sh -c "pip install --no-cache-dir requests pyyaml && python scripts/import_inventory.py data/sample.yaml"
+    environment:
+      # Connect to the chip-in-inventory service within the Docker network
+      - API_BASE_URL=http://chip-in-inventory:3000/v1
+    depends_on:
+      - chip-in-inventory
+
+  # The etcd backend datastore
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.14
+    ports:
+      - "2379:2379"
+    command: >
+      etcd
+      --advertise-client-urls http://etcd:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --data-dir /etcd-data
+    volumes:
+      - etcd_data:/etcd-data
+
+volumes:
+  etcd_data:

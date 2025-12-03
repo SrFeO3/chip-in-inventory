@@ -1,0 +1,215 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em 2em;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 2em;
+}
+
+h1, .app-header h1, h2, h3 {
+    color: #333;
+    margin: 0;
+}
+
+button {
+    padding: 8px 15px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+.item {
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.item-id {
+    cursor: pointer;
+    font-weight: bold;
+    flex-grow: 1; /* Allow ID to take up available space */
+}
+
+.item-header.selected {
+    background-color: #e7f3ff; /* A light blue background for selection */
+    border-radius: 4px;
+    outline: 1px solid #90caff; /* A subtle outline */
+}
+
+.item-details {
+    padding-left: 20px;
+    border-left: 2px solid #eee;
+    margin-top: 10px;
+}
+
+.item-details pre {
+    background-color: #eee;
+    padding: 10px;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* New styles for side-by-side layout */
+#main-layout-container {
+    display: flex;
+    padding: 0 2em; /* Add horizontal padding to the main content area */
+    /* The height of the main container should fill the viewport minus the header */
+    height: calc(100vh - 100px); /* Adjust 100px based on actual header height */
+}
+
+/* New styles for the left pane container */
+#list-pane-container {
+    /* Set an initial width (flex-basis) and allow it to shrink but not grow. */
+    /* This prevents the pane from being squashed on initial load. */
+    flex: 0 1 33%;
+    overflow-y: auto; /* Add scroll if content overflows */
+}
+
+/* Styles for the resizer */
+#resizer {
+    flex: 0 0 5px; /* Do not grow, do not shrink, base width 5px */
+    cursor: col-resize;
+    background-color: #ddd;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+
+.pane-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 1em;
+    padding-right: 10px; /* Space for scrollbar */
+    gap: 15px;
+}
+
+#details-container {
+    /* Let this pane grow and shrink to fill the remaining space. */
+    /* The initial basis is auto. */
+    flex: 1 1 auto;
+    overflow-y: auto;
+    border-left: 1px solid #ccc;
+    padding-left: 20px;
+}
+
+/* Class added to body during resize to prevent text selection */
+.resizing {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.add-form {
+    margin-top: 0.5em;
+}
+
+/* Styles for dynamically generated forms */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+}
+.label-wrapper {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.form-group .help-text {
+    display: inline;
+    font-size: 0.85em;
+    color: #555;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+.form-group input[type="text"],{
+    width: 100%;
+}
+.form-group input[type="number"],
+.form-group textarea {
+    width: 100%; /* Take up available space */
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    min-width: 400px; /* Ensure a minimum width for better usability */
+    max-width: 800px; /* Increase max-width for wider fields */
+}
+.form-group-checkbox label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+}
+.form-group-checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    width: auto;
+}
+.read-only-field {
+    padding: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    min-width: 400px; /* Ensure a minimum width */
+    max-width: 800px;
+}
+.attributes-editor {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 10px;
+    background-color: #f9f9f9;
+}
+.attribute-pair {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.attribute-pair input, .attribute-pair textarea {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.attr-value-json {
+    font-family: monospace;
+    white-space: pre;
+}
