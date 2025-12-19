@@ -1,214 +1,234 @@
-{
-  "realms": [
-    {
-      "name": "shop",
-      "title": "shop",
-      "createdAt": "2025-12-01T23:57:43.032762739Z",
-      "description": "realm for the shop site",
-      "cacert": "-----BEGIN CERTIFICATE-----\ndummy ca cert\n-----END CERTIFICATE-----",
-      "signingKey": "-----BEGIN PRIVATE KEY-----\ndumy secret signing key\n-----END PRIVATE KEY-----",
-      "sessionTimeout": 2592000,
-      "administrators": [
-        "admin1@example.com",
-        "admin2@example.com"
-      ],
-      "expiredAt": "2034-12-31T23:59:59Z",
-      "disabled": false,
-      "updatedAt": "2025-12-02T07:26:09.061245815Z",
-      "zones": [
-        {
-          "name": "sr.example.com",
-          "title": "Shop zone sr.example.com",
-          "description": "zone for the shop site",
-          "createdAt": "2025-12-01T23:57:43.038903606Z",
-          "updatedAt": "2025-12-02T07:25:58.275333469Z",
-          "subdomains": [
-            {
-              "name": "sirius",
-              "title": "sirius",
-              "description": "Subdomain 'sirius' for the shop site",
-              "createdAt": "2025-11-28T07:02:23.143326780Z",
-              "updatedAt": "2025-12-02T07:25:25.949331175Z"
-            }
-          ]
-        }
-      ],
-      "hubs": [
-        {
-          "name": "hub1",
-          "title": "Hub hub1",
-          "fqdn": "spnhub.sr.example.com",
-          "serverPort": 443,
-          "serverCert": "-----BEGIN CERTIFICATE-----\nMIIDuDCCAqCgAwIBAgIUO7HKCuR7Wrj43+g6aGsRU9uTTK8wDQYJKoZIhvcNAQEL\nBQAwYTELMAkGA1UEBhMCSlAxDjAMBgNVBAgMBVRva3lvMQ0wCwYDVQQHDARVZW5v\nMRcwFQYDVQQKDA5TcG5UZXN0U2VydmljZTEaMBgGA1UEAwwRTXlTcG5UZXN0U2Vy\ndmVyQ0EwHhcNMjUxMjAyMDY0NTI0WhcNMzUxMTMwMDY0NTI0WjBlMQswCQYDVQQG\nEwJKUDEOMAwGA1UECAwFVG9reW8xDTALBgNVBAcMBFVlbm8xFzAVBgNVBAoMDlNw\nblRlc3RTZXJ2aWNlMR4wHAYDVQQDDBVzcG5odWIuc3IuZXhhbXBsZS5jb20wggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCy549Cl7WB/qNLfK2I5ENruBvu\nZdsjRUm6n6UdMW9JUNV4dPVH9QjHc4IY4sB5G0sA4HZ/fakaRgbKSMWIQHGPaaBB\nDxbT7INf1kafUz/2nKdu5zZKCOOs5nLWqwc6vA7e3WHfduXkbXUfU6FHRGb/+eRU\nfmFvzsYqm1iL3JFtvKHmNEd+Ru1qPwpxWI10pZlmI/2U400oIHMa2xpKbci4r2kp\n5hGpzudOu3p01QkgCA85Wk1prV6U3821tJh9GaDTIIvyvyx8QnX8atgcvsgXe2+/\nnhr7wdLBriAb+rZLuWIzASqmO84wervfoaYbgceIoZPGojpGnbVOunxx4wQ5AgMB\nAAGjZDBiMCAGA1UdEQQZMBeCFXNwbmh1Yi5zci5leGFtcGxlLmNvbTAdBgNVHQ4E\nFgQUU/TOwnLd76MgM03hYyktCRZBpKIwHwYDVR0jBBgwFoAUFA+rCLx/90rIw3jv\nY7LHNEjgJngwDQYJKoZIhvcNAQELBQADggEBAJAhon/8S1aGyUL7aIwN3PlDziDn\nUEdKnBn5B2fGTslu3je2Ouv293xpMPLrOQk1Ipk6OW7T91RREb1ptPU91S23B9vN\nDkOyETdQNFvkv3kxV2GKzr5x32nfBi48b+gJG9Izx/mj/ekYciDg6JXS8bDeLDcQ\n+BHzgxQKvYw8Y2BFdxdWU0c0TqWYgsnWiAgjm2s03YpBd+31w3hIalmnkr96fbbw\nFs8yk8pHv0OvF2NOdsbMaRTmJA3NFE0VFYC8fCIT2HUKzZo1d72xfgq37p95wuye\nJfAVfE4mNO61HXaeC0VLMswlZ+VXj0rZuoNU15tv9gDrXoLmIgqRc21lpVg=\n-----END CERTIFICATE-----",
-          "serverCertKey": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCy549Cl7WB/qNL\nfK2I5ENruBvuZdsjRUm6n6UdMW9JUNV4dPVH9QjHc4IY4sB5G0sA4HZ/fakaRgbK\nSMWIQHGPaaBBDxbT7INf1kafUz/2nKdu5zZKCOOs5nLWqwc6vA7e3WHfduXkbXUf\nU6FHRGb/+eRUfmFvzsYqm1iL3JFtvKHmNEd+Ru1qPwpxWI10pZlmI/2U400oIHMa\n2xpKbci4r2kp5hGpzudOu3p01QkgCA85Wk1prV6U3821tJh9GaDTIIvyvyx8QnX8\natgcvsgXe2+/nhr7wdLBriAb+rZLuWIzASqmO84wervfoaYbgceIoZPGojpGnbVO\nunxx4wQ5AgMBAAECggEANwDUXb/w0P+tysaRP9YWGGcpRzlPj199FICCriAFu/+7\nMeabhr0CLvgHVolYbaODgsiABiBnPimrasPG32YYw+PQnk/6T7uWhH+HhPJ+Zt6w\n53r0iPyEqyLKyc8ZUOiClehwb9jJQ1qXuMLogdW46Rg2J/gXEt36tRy/s3hjyd3B\nlyZLeBpbIIHWiCIIYE5Jg6dY5gjiYCYYFsf13pi/T4DCp5n2RzL0uCawkJnSco60\nWqnINsWLuTd4rj17R+H3k4FiB3uaZX77eeHlrHzohl9Hl84GyyZAV9f9QlVT43mu\nz4fUq4PNVCEZXeJ5JkwUJIs17FQ4pp9FKZ9dDLeWNQKBgQDsUays5t4YuhHrle8Y\nR1kVM/0mRARdyrVZA/SHk9NlPkUKKBqKlc7SGQeuLVyRZuR+rPzQPjGIZVLmufIh\nx1iB+zNGK+nrZxMxp03sxxMST1TpFKc3s3rDKaVmThLPqt8aw7L8l3JoYaD6hF6o\n1XWDrMoBCMXfJWb2IoN4Nq4GOwKBgQDBzc6OLFtCMoIUp7GrHppjxcoix+Jy/etF\nOca2aIIY3oUgZzbGZkb0TTO4D7BvISsZm+Buifn4Euw7Vn/HiWjZwi0CLFp4p5ih\n+PtU/MbZOedoBX6syXCGX/yQww+NLCjVIoGSC2Asi7+M8nhTcbaZnKdmvHYahmm1\n7LG3WadUGwKBgQCxNS2/GgBBmoYFmxEHq7jpZWrXXvnHO1Jxxb2ATSGgMemjjB8a\n/OtyMMLJocpgXj/Jnf6WSYzrMs/PpHAlVE7SaYQxgoyOsWR7P3H3s/BhMowBnDMo\nWbYc0wXsiW8huohCka2OLCLmkw8bzFcPU8IjU1bHH8UBaBKlT4w2gQpOMQKBgGTx\nZE+rDNFa62QEwEaHxxSGlbUt9WW9mchRwo2Ju5FmfWKWP/JwnS5r869ABL6tQPyy\nsuAAX8F1YbO6Zw2wJXueZsEGBw1nBdn/jDEFBDFqtnv4uLUYqtJitnNUFgqK4K26\nrlA6OpqZI2kvdbrItLon3Q1mxgEk13SZVytPuBbXAoGBAN+v4FaaMiDlND01FmwA\nfCxYEgvNyP+HeRPjEZryL6zYBBg1EBooDh7+IkN4Jz1ZWnv+X8qzhyOb3w/rPXt+\nxIlufZKRN+NLEonPsHWUbbOaF60IYp017gWnSckcqTMVP9X3lisAHg1K77SDNfJ8\nHPZcRTEK/Q/EO0jgEDKYEmMz\n-----END PRIVATE KEY-----",
-          "description": "spnhub for the shop site",
-          "attributes": null,
-          "createdAt": "2025-11-28T07:05:40.045560698Z",
-          "updatedAt": "2025-12-02T07:25:47.188028105Z",
-          "services": [
-            {
-              "name": "api",
-              "title": "api service",
-              "description": "API service to retrieve fruit data from the database",
-              "realm": "urn:chip-in:realm:shop",
-              "provider": [
-                "urn:chip-in:end-point:hub.master.sr.example.com:api-server"
-              ],
-              "consumers": [
-                "urn:chip-in:end-point:hub.master.sr.example.com:api-gateway"
-              ],
-              "singleton": false,
-              "createdAt": "2025-12-02T01:50:32.133741125Z",
-              "updatedAt": "2025-12-02T07:21:09.041254301Z"
-            },
-            {
-              "name": "auth",
-              "title": "auth service",
-              "description": "OIDC authentication service",
-              "realm": "urn:chip-in:realm:shop",
-              "provider": [
-                "urn:chip-in:end-point:hub.master.sr.example.com:auth-server"
-              ],
-              "consumers": [
-                "urn:chip-in:end-point:hub.master.sr.example.com:auth-gateway"
-              ],
-              "singleton": false,
-              "createdAt": "2025-12-02T01:53:33.356205149Z",
-              "updatedAt": "2025-12-02T07:21:48.150024765Z"
-            },
-            {
-              "name": "database",
-              "title": "database service",
-              "description": "Fruit shop database service",
-              "realm": "urn:chip-in:realm:shop",
-              "provider": [
-                "urn:chip-in:end-point:hub.master.sr.example.com:database-server"
-              ],
-              "consumers": [
-                "urn:chip-in:end-point:hub.master.sr.example.com:database-client"
-              ],
-              "singleton": false,
-              "createdAt": "2025-11-28T07:06:32.087767927Z",
-              "updatedAt": "2025-12-02T07:23:21.739742772Z"
-            },
-            {
-              "name": "www",
-              "title": "www service",
-              "description": "Fruit shop web front service",
-              "realm": "urn:chip-in:realm:shop",
-              "provider": [
-                "chip-in:end-point:hub.master.sr.example.com:www-contents-server"
-              ],
-              "consumers": [
-                "chip-in:end-point:hub.master.sr.example.com:www-gateway"
-              ],
-              "singleton": false,
-              "createdAt": "2025-12-02T01:49:36.941832298Z",
-              "updatedAt": "2025-12-02T07:23:31.390126830Z"
-            }
-          ]
-        }
-      ],
-      "virtualHosts": [
-        {
-          "name": "fruit",
-          "title": "Virtual Host fruit",
-          "description": "Virtual host for the main shop website",
-          "subdomain": "urn:chip-in:subdomain:shop:sr.example.com:sirius",
-          "routingChain": "urn:chip-in:routing-chain:shop:fruit-shop-route",
-          "accessLogMaxValueLength": 512,
-          "certificate": [
-            "-----BEGIN CERTIFICATE-----",
-            "MIIDvjCCAqagAwIBAgIUO7HKCuR7Wrj43+g6aGsRU9uTTLAwDQYJKoZIhvcNAQEL",
-            "BQAwYTELMAkGA1UEBhMCSlAxDjAMBgNVBAgMBVRva3lvMQ0wCwYDVQQHDARVZW5v",
-            "MRcwFQYDVQQKDA5TcG5UZXN0U2VydmljZTEaMBgGA1UEAwwRTXlTcG5UZXN0U2Vy",
-            "dmVyQ0EwHhcNMjUxMjAyMDY0NjEzWhcNMzUxMTMwMDY0NjEzWjBlMQswCQYDVQQG",
-            "EwJKUDEOMAwGA1UECAwFVG9reW8xDTALBgNVBAcMBFVlbm8xFzAVBgNVBAoMDlNw",
-            "blRlc3RTZXJ2aWNlMR4wHAYDVQQDDBVzaXJpdXMuc3IuZXhhbXBsZS5jb20wggEi",
-            "MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCViPFTS/8rClBlV/tlPRdkFbgu",
-            "sYL7hLTvcfupMPgCSTZwCGBlijqcY3dwxJJato6nFEm1PSXrkZV5ZVbCPi/aJ1va",
-            "TT/627SB6M93lfFA8ftNtS/boJWD0szAB8wEBPx/DdVwXhjlgpR8TAJAXXd6wchf",
-            "f+tBmk2Tn4tMrvSSBlV5UMwCUWfzV/d4/zQUzxhpHgQUum2T3nBmCtMs6zuR2itj",
-            "Pd7ZMv2/NLW8lU0unYsHOcNsgPrJaHghKqilAXLirCd+vjdgY3jZ9ta33OOBAA6X",
-            "TKqMgoI0Rd3NGLNQYNN9GWu0rapO05vX9DVL5udy4VARyNKqF6c8DU3WJJ4xAgMB",
-            "AAGjajBoMCYGA1UdEQQfMB2CFXNpcml1cy5zci5leGFtcGxlLmNvbYcEfwAAATAd",
-            "BgNVHQ4EFgQUEKKmqNSuTu0TpjPjTUhiBKyaMpswHwYDVR0jBBgwFoAUFA+rCLx/",
-            "90rIw3jvY7LHNEjgJngwDQYJKoZIhvcNAQELBQADggEBABcnEQIEef7dlpwLtP9F",
-            "SoLrNKYTii7vR09wj79ZyKsXq34DurkAhYuMickvyxpn3LKTKSSivB+mGy4jSnRt",
-            "yJ0pNqrU0tOoHj7J0ElMs/A6Qvak6w9Wy6VrWbjKlviEqM0BBRud4Fg61zIO7JR8",
-            "eValpb2GZFiZmwzm6wHcnWDyFRjYvWytVbwjwwPiO6v5/73sgzk4b48CqqPNNHbX",
-            "ySoBBifyBEPnDTj8yn3QfT2z46tC34kOqHwBxursM22ZXd6ByycRoraw1fClAwMs",
-            "rAVyOWWPxmbPQiYLHp9o4QLsNGCpSOLkaA/RFgyIyK/LT8WNPv7qhEhVUHYKEqmv",
-            "xzM=",
-            "-----END CERTIFICATE-----"
-          ],
-          "key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCViPFTS/8rClBl\nV/tlPRdkFbgusYL7hLTvcfupMPgCSTZwCGBlijqcY3dwxJJato6nFEm1PSXrkZV5\nZVbCPi/aJ1vaTT/627SB6M93lfFA8ftNtS/boJWD0szAB8wEBPx/DdVwXhjlgpR8\nTAJAXXd6wchff+tBmk2Tn4tMrvSSBlV5UMwCUWfzV/d4/zQUzxhpHgQUum2T3nBm\nCtMs6zuR2itjPd7ZMv2/NLW8lU0unYsHOcNsgPrJaHghKqilAXLirCd+vjdgY3jZ\n9ta33OOBAA6XTKqMgoI0Rd3NGLNQYNN9GWu0rapO05vX9DVL5udy4VARyNKqF6c8\nDU3WJJ4xAgMBAAECggEAB/SBliNYX1NMpJ+SHbgqyuXG5yEFbVkJgSWItF8JCqIX\ndc1UR4KbjJ9UBtlGSfIlU6kmJLCsmEQl9g/YljvVst7eKZZrfW57w199zghZjdFx\nw5gMhDweSCWKQ/sGNP6I6j9zp+cxnuAcAyLOCduPFCZEASSegN5zGxPlRr6V/0Cn\nKRT8N/GTSwl8ofFAKzfnvVJUNM/XgTz5v772RmoTQW8s/BiH7mex0mY4/laWJZTd\nG25QkHDu9Y7APvBm9CewiAVnImzA4AJgjFiwEdmoSS01O5irYlNaDRZgfxXZQnMb\nriH0JehM70LC+pO0YywsCBravhavxiC7EpqMd+EWmQKBgQDOstZydm8+P3FKmfIQ\nhHihREPfNi1P45zGOgpffuwGavvn2UlvVeRAWY+mjHkNW+mEldgAetZkesJfqFsV\nv5DtV6zRtjz5LVY+d/nY9+hYOXKXPiVF9u2O/cafvq9TVmU6We2OmMrMEOKr8UFe\nRFe6wAcTFKv8wxTYKl97Q1uWBQKBgQC5M6bcUs9PzXgxe+Xib+oqQA0sT86y6851\nzYYMj9RsqUcoroUVPYHBGSGr1oZQenskkAsCSrt7geKAwnun2u3YpVNStkRG/cM1\n2cP7ZbwRxYP21I22rM3Kd0OdQYcM6OJd5s4mw/ZWb5l4FOgmYBtUeal1M1fOiWRz\naKSs/AmTPQKBgHgNBuCUSSguUO6zWxSc3DNOIt2R6d9so7G+JCgy34MawBR4713q\n1RdK7VQeYnCP4aFQJpSgw8S4SAynC8Al81bmhUmIPwG6g0zlAggydJBJTXTqc1uf\nf3p9is9dQRd2JnUtpfwcYi0D4aNcDEtkBlBBF9rNNtcntwOWGL7O8HLBAoGAHjKb\n3ITsJLj+BiOLolZZOjZjb3w72dS1P2QZnWa+XlFjtvBt5r62r4Onh9tc3zZ5acbK\n5L7Gvya4hgIwI3iBG7gpU+1ASMsLz3YIjK9T8RnhoJeb29NlYsP7lGKg4KwAbQs7\nRfrh6cocngXarJczHZ0Q0nlisdyZMnA3mbUm4okCgYEAmlkERor0hgk0jOYngQpg\naN+Ckl4yrjYKSu/xGOs13A8Q0xh3K9EOK+HdsWjAyrrYfIkRn6X9no+Fqq5iBTXv\nUpsNWCA0ddoMNAvH4nSSRYevIvwma3pUTAtNKN+1jFWwrYOiSs8IGzIuVCVaezkI\nNFYcow6EFowIZP+BuVpJb40=\n-----END PRIVATE KEY-----",
-          "disabled": false,
-          "createdAt": "2025-11-28T07:37:36.170639458Z",
-          "updatedAt": "2025-12-02T07:24:09.950210979Z"
-        }
-      ],
-      "routingChains": [
-        {
-          "name": "fruit-shop-route",
-          "title": "Routing-Chain fruit-shop-route",
-          "description": "Virtual host handling 'fruit' subdomain requests",
-          "rules": [
-            {
-              "match": "request.path == '/set-device-id'",
-              "action": {
-                "type": "setDeviceId",
-                "expiration": null
-              }
-            },
-            {
-              "match": "request.path == '/checkout'",
-              "action": {
-                "type": "checkoutServices"
-              }
-            },
-            {
-              "match": "request.path.starts_with('/proxy/')",
-              "action": {
-                "type": "proxy",
-                "target": "http://backend-service.internal"
-              }
-            },
-            {
-              "match": "request.path == '/redirect'",
-              "action": {
-                "type": "redirect"
-              }
-            },
-            {
-              "match": "request.path == '/jump'",
-              "action": {
-                "type": "jump"
-              }
-            },
-            {
-              "match": "request.path == '/set-vars'",
-              "action": {
-                "type": "setVariables"
-              }
-            },
-            {
-              "match": "request.path == '/set-headers'",
-              "action": {
-                "type": "setHeaders"
-              }
-            },
-            {
-              "match": "request.path.starts_with('/admin/')",
-              "action": {
-                "type": "authentication"
-              }
-            }
-          ],
-          "createdAt": "2025-11-28T07:38:06.054889192Z",
-          "updatedAt": "2025-12-02T07:24:37.252441710Z"
-        }
-      ]
-    }
-  ]
-}
+realms:
+- name: shop
+  title: shop
+  createdAt: '2025-12-01T23:57:43.032762739Z'
+  description: realm for the shop site
+  cacert: |
+    -----BEGIN CERTIFICATE-----
+    dummy ca cert
+    -----END CERTIFICATE-----
+  signingKey: |
+    -----BEGIN PRIVATE KEY-----
+    dumy secret signing key
+    -----END PRIVATE KEY-----
+  sessionTimeout: 2592000
+  administrators:
+  - admin1@example.com
+  - admin2@example.com
+  expiredAt: '2034-12-31T23:59:59Z'
+  disabled: false
+  updatedAt: '2025-12-02T07:26:09.061245815Z'
+  zones:
+  - name: sr.example.com
+    title: Shop zone sr.example.com
+    description: zone for the shop site
+    createdAt: '2025-12-01T23:57:43.038903606Z'
+    updatedAt: '2025-12-02T07:25:58.275333469Z'
+    subdomains:
+    - name: sirius
+      title: sirius
+      description: Subdomain 'sirius' for the shop site
+      createdAt: '2025-11-28T07:02:23.143326780Z'
+      updatedAt: '2025-12-02T07:25:25.949331175Z'
+  hubs:
+  - name: hub1
+    title: Hub hub1
+    fqdn: spnhub.sr.example.com
+    serverPort: 443
+    serverCert: |
+      -----BEGIN CERTIFICATE-----
+      MIIDuDCCAqCgAwIBAgIUO7HKCuR7Wrj43+g6aGsRU9uTTK8wDQYJKoZIhvcNAQEL
+      BQAwYTELMAkGA1UEBhMCSlAxDjAMBgNVBAgMBVRva3lvMQ0wCwYDVQQHDARVZW5v
+      MRcwFQYDVQQKDA5TcG5UZXN0U2VydmljZTEaMBgGA1UEAwwRTXlTcG5UZXN0U2Vy
+      dmVyQ0EwHhcNMjUxMjAyMDY0NTI0WhcNMzUxMTMwMDY0NTI0WjBlMQswCQYDVQQG
+      EwJKUDEOMAwGA1UECAwFVG9reW8xDTALBgNVBAcMBFVlbm8xFzAVBgNVBAoMDlNw
+      blRlc3RTZXJ2aWNlMR4wHAYDVQQDDBVzcG5odWIuc3IuZXhhbXBsZS5jb20wggEi
+      MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCy549Cl7WB/qNLfK2I5ENruBvu
+      ZdsjRUm6n6UdMW9JUNV4dPVH9QjHc4IY4sB5G0sA4HZ/fakaRgbKSMWIQHGPaaBB
+      DxbT7INf1kafUz/2nKdu5zZKCOOs5nLWqwc6vA7e3WHfduXkbXUfU6FHRGb/+eRU
+      fmFvzsYqm1iL3JFtvKHmNEd+Ru1qPwpxWI10pZlmI/2U400oIHMa2xpKbci4r2kp
+      5hGpzudOu3p01QkgCA85Wk1prV6U3821tJh9GaDTIIvyvyx8QnX8atgcvsgXe2+/
+      nhr7wdLBriAb+rZLuWIzASqmO84wervfoaYbgceIoZPGojpGnbVOunxx4wQ5AgMB
+      AAGjZDBiMCAGA1UdEQQZMBeCFXNwbmh1Yi5zci5leGFtcGxlLmNvbTAdBgNVHQ4E
+      FgQUU/TOwnLd76MgM03hYyktCRZBpKIwHwYDVR0jBBgwFoAUFA+rCLx/90rIw3jv
+      Y7LHNEjgJngwDQYJKoZIhvcNAQELBQADggEBAJAhon/8S1aGyUL7aIwN3PlDziDn
+      UEdKnBn5B2fGTslu3je2Ouv293xpMPLrOQk1Ipk6OW7T91RREb1ptPU91S23B9vN
+      DkOyETdQNFvkv3kxV2GKzr5x32nfBi48b+gJG9Izx/mj/ekYciDg6JXS8bDeLDcQ
+      +BHzgxQKvYw8Y2BFdxdWU0c0TqWYgsnWiAgjm2s03YpBd+31w3hIalmnkr96fbbw
+      Fs8yk8pHv0OvF2NOdsbMaRTmJA3NFE0VFYC8fCIT2HUKzZo1d72xfgq37p95wuye
+      JfAVfE4mNO61HXaeC0VLMswlZ+VXj0rZuoNU15tv9gDrXoLmIgqRc21lpVg=
+      -----END CERTIFICATE-----
+    serverCertKey: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCy549Cl7WB/qNL
+      fK2I5ENruBvuZdsjRUm6n6UdMW9JUNV4dPVH9QjHc4IY4sB5G0sA4HZ/fakaRgbK
+      SMWIQHGPaaBBDxbT7INf1kafUz/2nKdu5zZKCOOs5nLWqwc6vA7e3WHfduXkbXUf
+      U6FHRGb/+eRUfmFvzsYqm1iL3JFtvKHmNEd+Ru1qPwpxWI10pZlmI/2U400oIHMa
+      2xpKbci4r2kp5hGpzudOu3p01QkgCA85Wk1prV6U3821tJh9GaDTIIvyvyx8QnX8
+      atgcvsgXe2+/nhr7wdLBriAb+rZLuWIzASqmO84wervfoaYbgceIoZPGojpGnbVO
+      unxx4wQ5AgMBAAECggEANwDUXb/w0P+tysaRP9YWGGcpRzlPj199FICCriAFu/+7
+      Meabhr0CLvgHVolYbaODgsiABiBnPimrasPG32YYw+PQnk/6T7uWhH+HhPJ+Zt6w
+      53r0iPyEqyLKyc8ZUOiClehwb9jJQ1qXuMLogdW46Rg2J/gXEt36tRy/s3hjyd3B
+      lyZLeBpbIIHWiCIIYE5Jg6dY5gjiYCYYFsf13pi/T4DCp5n2RzL0uCawkJnSco60
+      WqnINsWLuTd4rj17R+H3k4FiB3uaZX77eeHlrHzohl9Hl84GyyZAV9f9QlVT43mu
+      z4fUq4PNVCEZXeJ5JkwUJIs17FQ4pp9FKZ9dDLeWNQKBgQDsUays5t4YuhHrle8Y
+      R1kVM/0mRARdyrVZA/SHk9NlPkUKKBqKlc7SGQeuLVyRZuR+rPzQPjGIZVLmufIh
+      x1iB+zNGK+nrZxMxp03sxxMST1TpFKc3s3rDKaVmThLPqt8aw7L8l3JoYaD6hF6o
+      1XWDrMoBCMXfJWb2IoN4Nq4GOwKBgQDBzc6OLFtCMoIUp7GrHppjxcoix+Jy/etF
+      Oca2aIIY3oUgZzbGZkb0TTO4D7BvISsZm+Buifn4Euw7Vn/HiWjZwi0CLFp4p5ih
+      +PtU/MbZOedoBX6syXCGX/yQww+NLCjVIoGSC2Asi7+M8nhTcbaZnKdmvHYahmm1
+      7LG3WadUGwKBgQCxNS2/GgBBmoYFmxEHq7jpZWrXXvnHO1Jxxb2ATSGgMemjjB8a
+      /OtyMMLJocpgXj/Jnf6WSYzrMs/PpHAlVE7SaYQxgoyOsWR7P3H3s/BhMowBnDMo
+      WbYc0wXsiW8huohCka2OLCLmkw8bzFcPU8IjU1bHH8UBaBKlT4w2gQpOMQKBgGTx
+      ZE+rDNFa62QEwEaHxxSGlbUt9WW9mchRwo2Ju5FmfWKWP/JwnS5r869ABL6tQPyy
+      suAAX8F1YbO6Zw2wJXueZsEGBw1nBdn/jDEFBDFqtnv4uLUYqtJitnNUFgqK4K26
+      rlA6OpqZI2kvdbrItLon3Q1mxgEk13SZVytPuBbXAoGBAN+v4FaaMiDlND01FmwA
+      fCxYEgvNyP+HeRPjEZryL6zYBBg1EBooDh7+IkN4Jz1ZWnv+X8qzhyOb3w/rPXt+
+      xIlufZKRN+NLEonPsHWUbbOaF60IYp017gWnSckcqTMVP9X3lisAHg1K77SDNfJ8
+      HPZcRTEK/Q/EO0jgEDKYEmMz
+      -----END PRIVATE KEY-----
+    description: spnhub for the shop site
+    attributes: null
+    createdAt: '2025-11-28T07:05:40.045560698Z'
+    updatedAt: '2025-12-02T07:25:47.188028105Z'
+    services:
+    - name: api
+      title: api service
+      description: API service to retrieve fruit data from the database
+      realm: urn:chip-in:realm:shop
+      provider:
+      - urn:chip-in:end-point:hub.master.sr.example.com:api-server
+      consumers:
+      - urn:chip-in:end-point:hub.master.sr.example.com:api-gateway
+      singleton: false
+      createdAt: '2025-12-02T01:50:32.133741125Z'
+      updatedAt: '2025-12-02T07:21:09.041254301Z'
+    - name: auth
+      title: auth service
+      description: OIDC authentication service
+      realm: urn:chip-in:realm:shop
+      provider:
+      - urn:chip-in:end-point:hub.master.sr.example.com:auth-server
+      consumers:
+      - urn:chip-in:end-point:hub.master.sr.example.com:auth-gateway
+      singleton: false
+      createdAt: '2025-12-02T01:53:33.356205149Z'
+      updatedAt: '2025-12-02T07:21:48.150024765Z'
+    - name: database
+      title: database service
+      description: Fruit shop database service
+      realm: urn:chip-in:realm:shop
+      provider:
+      - urn:chip-in:end-point:hub.master.sr.example.com:database-server
+      consumers:
+      - urn:chip-in:end-point:hub.master.sr.example.com:database-client
+      singleton: false
+      createdAt: '2025-11-28T07:06:32.087767927Z'
+      updatedAt: '2025-12-02T07:23:21.739742772Z'
+    - name: www
+      title: www service
+      description: Fruit shop web front service
+      realm: urn:chip-in:realm:shop
+      provider:
+      - chip-in:end-point:hub.master.sr.example.com:www-contents-server
+      consumers:
+      - chip-in:end-point:hub.master.sr.example.com:www-gateway
+      singleton: false
+      createdAt: '2025-12-02T01:49:36.941832298Z'
+      updatedAt: '2025-12-02T07:23:31.390126830Z'
+  virtualHosts:
+  - name: fruit
+    title: Virtual Host fruit
+    description: Virtual host for the main shop website
+    subdomain: urn:chip-in:subdomain:shop:sr.example.com:sirius
+    routingChain: urn:chip-in:routing-chain:shop:fruit-shop-route
+    accessLogMaxValueLength: 512
+    certificate:
+    - '-----BEGIN CERTIFICATE-----'
+    - MIIDvjCCAqagAwIBAgIUO7HKCuR7Wrj43+g6aGsRU9uTTLAwDQYJKoZIhvcNAQEL
+    - BQAwYTELMAkGA1UEBhMCSlAxDjAMBgNVBAgMBVRva3lvMQ0wCwYDVQQHDARVZW5v
+    - MRcwFQYDVQQKDA5TcG5UZXN0U2VydmljZTEaMBgGA1UEAwwRTXlTcG5UZXN0U2Vy
+    - dmVyQ0EwHhcNMjUxMjAyMDY0NjEzWhcNMzUxMTMwMDY0NjEzWjBlMQswCQYDVQQG
+    - EwJKUDEOMAwGA1UECAwFVG9reW8xDTALBgNVBAcMBFVlbm8xFzAVBgNVBAoMDlNw
+    - blRlc3RTZXJ2aWNlMR4wHAYDVQQDDBVzaXJpdXMuc3IuZXhhbXBsZS5jb20wggEi
+    - MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCViPFTS/8rClBlV/tlPRdkFbgu
+    - sYL7hLTvcfupMPgCSTZwCGBlijqcY3dwxJJato6nFEm1PSXrkZV5ZVbCPi/aJ1va
+    - TT/627SB6M93lfFA8ftNtS/boJWD0szAB8wEBPx/DdVwXhjlgpR8TAJAXXd6wchf
+    - f+tBmk2Tn4tMrvSSBlV5UMwCUWfzV/d4/zQUzxhpHgQUum2T3nBmCtMs6zuR2itj
+    - Pd7ZMv2/NLW8lU0unYsHOcNsgPrJaHghKqilAXLirCd+vjdgY3jZ9ta33OOBAA6X
+    - TKqMgoI0Rd3NGLNQYNN9GWu0rapO05vX9DVL5udy4VARyNKqF6c8DU3WJJ4xAgMB
+    - AAGjajBoMCYGA1UdEQQfMB2CFXNpcml1cy5zci5leGFtcGxlLmNvbYcEfwAAATAd
+    - BgNVHQ4EFgQUEKKmqNSuTu0TpjPjTUhiBKyaMpswHwYDVR0jBBgwFoAUFA+rCLx/
+    - 90rIw3jvY7LHNEjgJngwDQYJKoZIhvcNAQELBQADggEBABcnEQIEef7dlpwLtP9F
+    - SoLrNKYTii7vR09wj79ZyKsXq34DurkAhYuMickvyxpn3LKTKSSivB+mGy4jSnRt
+    - yJ0pNqrU0tOoHj7J0ElMs/A6Qvak6w9Wy6VrWbjKlviEqM0BBRud4Fg61zIO7JR8
+    - eValpb2GZFiZmwzm6wHcnWDyFRjYvWytVbwjwwPiO6v5/73sgzk4b48CqqPNNHbX
+      ySoBBifyBEPnDTj8yn3QfT2z46tC34kOqHwBxursM22ZXd6ByycRoraw1fClAwMs
+    - rAVyOWWPxmbPQiYLHp9o4QLsNGCpSOLkaA/RFgyIyK/LT8WNPv7qhEhVUHYKEqmv
+    - xzM=
+    - '-----END CERTIFICATE-----'
+    key: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCViPFTS/8rClBl
+      V/tlPRdkFbgusYL7hLTvcfupMPgCSTZwCGBlijqcY3dwxJJato6nFEm1PSXrkZV5
+      ZVbCPi/aJ1vaTT/627SB6M93lfFA8ftNtS/boJWD0szAB8wEBPx/DdVwXhjlgpR8
+      TAJAXXd6wchff+tBmk2Tn4tMrvSSBlV5UMwCUWfzV/d4/zQUzxhpHgQUum2T3nBm
+      CtMs6zuR2itjPd7ZMv2/NLW8lU0unYsHOcNsgPrJaHghKqilAXLirCd+vjdgY3jZ
+      9ta33OOBAA6XTKqMgoI0Rd3NGLNQYNN9GWu0rapO05vX9DVL5udy4VARyNKqF6c8
+      DU3WJJ4xAgMBAAECggEAB/SBliNYX1NMpJ+SHbgqyuXG5yEFbVkJgSWItF8JCqIX
+      dc1UR4KbjJ9UBtlGSfIlU6kmJLCsmEQl9g/YljvVst7eKZZrfW57w199zghZjdFx
+      w5gMhDweSCWKQ/sGNP6I6j9zp+cxnuAcAyLOCduPFCZEASSegN5zGxPlRr6V/0Cn
+      KRT8N/GTSwl8ofFAKzfnvVJUNM/XgTz5v772RmoTQW8s/BiH7mex0mY4/laWJZTd
+      G25QkHDu9Y7APvBm9CewiAVnImzA4AJgjFiwEdmoSS01O5irYlNaDRZgfxXZQnMb
+      riH0JehM70LC+pO0YywsCBravhavxiC7EpqMd+EWmQKBgQDOstZydm8+P3FKmfIQ
+      hHihREPfNi1P45zGOgpffuwGavvn2UlvVeRAWY+mjHkNW+mEldgAetZkesJfqFsV
+      v5DtV6zRtjz5LVY+d/nY9+hYOXKXPiVF9u2O/cafvq9TVmU6We2OmMrMEOKr8UFe
+      RFe6wAcTFKv8wxTYKl97Q1uWBQKBgQC5M6bcUs9PzXgxe+Xib+oqQA0sT86y6851
+      zYYMj9RsqUcoroUVPYHBGSGr1oZQenskkAsCSrt7geKAwnun2u3YpVNStkRG/cM1
+      2cP7ZbwRxYP21I22rM3Kd0OdQYcM6OJd5s4mw/ZWb5l4FOgmYBtUeal1M1fOiWRz
+      aKSs/AmTPQKBgHgNBuCUSSguUO6zWxSc3DNOIt2R6d9so7G+JCgy34MawBR4713q
+      1RdK7VQeYnCP4aFQJpSgw8S4SAynC8Al81bmhUmIPwG6g0zlAggydJBJTXTqc1uf
+      f3p9is9dQRd2JnUtpfwcYi0D4aNcDEtkBlBBF9rNNtcntwOWGL7O8HLBAoGAHjKb
+      3ITsJLj+BiOLolZZOjZjb3w72dS1P2QZnWa+XlFjtvBt5r62r4Onh9tc3zZ5acbK
+      5L7Gvya4hgIwI3iBG7gpU+1ASMsLz3YIjK9T8RnhoJeb29NlYsP7lGKg4KwAbQs7
+      Rfrh6cocngXarJczHZ0Q0nlisdyZMnA3mbUm4okCgYEAmlkERor0hgk0jOYngQpg
+      aN+Ckl4yrjYKSu/xGOs13A8Q0xh3K9EOK+HdsWjAyrrYfIkRn6X9no+Fqq5iBTXv
+      UpsNWCA0ddoMNAvH4nSSRYevIvwma3pUTAtNKN+1jFWwrYOiSs8IGzIuVCVaezkI
+      NFYcow6EFowIZP+BuVpJb40=
+      -----END PRIVATE KEY-----
+    disabled: false
+    createdAt: '2025-11-28T07:37:36.170639458Z'
+    updatedAt: '2025-12-02T07:24:09.950210979Z'
+  routingChains:
+  - name: fruit-shop-route
+    title: Routing-Chain fruit-shop-route
+    description: Virtual host handling 'fruit' subdomain requests
+    rules:
+    - match: request.path == '/set-device-id'
+      action:
+        type: setDeviceId
+        expiration: null
+    - match: request.path == '/checkout'
+      action:
+        type: checkoutServices
+    - match: request.path.starts_with('/proxy/')
+      action:
+        type: proxy
+        target: http://backend-service.internal
+    - match: request.path == '/redirect'
+      action:
+        type: redirect
+    - match: request.path == '/jump'
+      action:
+        type: jump
+    - match: request.path == '/set-vars'
+      action:
+        type: setVariables
+    - match: request.path == '/set-headers'
+      action:
+        type: setHeaders
+    - match: request.path.starts_with('/admin/')
+      action:
+        type: authentication
+    createdAt: '2025-11-28T07:38:06.054889192Z'
+    updatedAt: '2025-12-02T07:24:37.252441710Z'
