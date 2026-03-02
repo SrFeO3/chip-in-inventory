@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// Structure for error responses
 #[derive(Serialize)]
@@ -19,8 +20,8 @@ pub struct Realm {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>, // readOnly
     pub cacert: String,
-    #[serde(rename = "signingKey")]
-    pub signing_key: String,
+    pub device_id_signing_key: String,
+    pub device_id_verification_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session_timeout: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -39,8 +40,8 @@ pub struct NewRealm {
     pub title: String,
     pub description: Option<String>,
     pub cacert: String,
-    #[serde(rename = "signingKey")]
-    pub signing_key: String,
+    pub device_id_signing_key: String,
+    pub device_id_verification_key: String,
     pub session_timeout: Option<i64>,
     pub administrators: Option<Vec<String>>,
     pub expired_at: Option<String>,
@@ -58,8 +59,8 @@ pub struct UpdateRealm {
     pub title: String,
     pub description: Option<String>,
     pub cacert: String,
-    #[serde(rename = "signingKey")]
-    pub signing_key: String,
+    pub device_id_signing_key: String,
+    pub device_id_verification_key: String,
     pub session_timeout: Option<i64>,
     pub administrators: Option<Vec<String>>,
     pub expired_at: Option<String>,
@@ -194,7 +195,8 @@ pub struct VirtualHost {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>, // readOnly
     pub subdomain: String,
-    pub routing_chain: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub routing_chain: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub access_log_recorder: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -202,7 +204,7 @@ pub struct VirtualHost {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub access_log_format: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub certificate: Option<Vec<String>>,
+    pub certificate: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -228,7 +230,8 @@ pub struct VirtualHostResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fqdn: Option<String>,
     pub subdomain: String,
-    pub routing_chain: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub routing_chain: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub access_log_recorder: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -236,7 +239,7 @@ pub struct VirtualHostResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub access_log_format: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub certificate: Option<Vec<String>>,
+    pub certificate: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -253,11 +256,12 @@ pub struct NewVirtualHost {
     pub title: String,
     pub description: Option<String>,
     pub subdomain: String,
-    pub routing_chain: String,
+    pub routing_chain: Option<String>,
     pub access_log_recorder: Option<String>,
     pub access_log_max_value_length: Option<i32>,
     pub access_log_format: Option<serde_json::Value>,
-    pub certificate: Option<Vec<String>>,
+    #[serde(default)]
+    pub certificate: Option<String>,
     pub key: Option<String>,
     pub disabled: Option<bool>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
@@ -273,11 +277,12 @@ pub struct UpdateVirtualHost {
     pub title: String,
     pub description: Option<String>,
     pub subdomain: String,
-    pub routing_chain: String,
+    pub routing_chain: Option<String>,
     pub access_log_recorder: Option<String>,
     pub access_log_max_value_length: Option<i32>,
     pub access_log_format: Option<serde_json::Value>,
-    pub certificate: Option<Vec<String>>,
+    #[serde(default)]
+    pub certificate: Option<String>,
     pub key: Option<String>,
     pub disabled: Option<bool>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
@@ -290,53 +295,60 @@ pub struct UpdateVirtualHost {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct SetDeviceId {
-    pub expiration: Option<i64>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct CheckoutServices {}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
 pub struct Proxy {
-    pub target: String,
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
-    pub no_body: bool,
+    pub upstream: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auth_scope_name: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct Redirect {}
+pub struct Redirect {
+    pub url: String,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct Jump {}
+pub struct ReturnStaticText {
+    pub content: String,
+    pub status: u16,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct SetVariables {}
+pub struct RequireAuthentication {
+    pub auth_scope_name: String,
+    pub protected_upstream: String,
+    pub oidc_client_id: String,
+    pub oidc_client_secret: String,
+    pub oidc_authorization_endpoint: String,
+    pub oidc_redirect_url: String,
+    pub oidc_token_endpoint: String,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct SetHeaders {}
+pub struct SetUpstreamRequestHeader {
+    pub name: String,
+    pub value: String,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct Authentication {}
+pub struct SetDownstreamResponseHeader {
+    pub name: String,
+    pub value: String,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Action {
-    SetDeviceId(SetDeviceId),
-    CheckoutServices(CheckoutServices),
     Proxy(Proxy),
     Redirect(Redirect),
-    Jump(Jump),
-    SetVariables(SetVariables),
-    SetHeaders(SetHeaders),
-    Authentication(Authentication),
+    ReturnStaticText(ReturnStaticText),
+    RequireAuthentication(RequireAuthentication),
+    SetUpstreamRequestHeader(SetUpstreamRequestHeader),
+    SetDownstreamResponseHeader(SetDownstreamResponseHeader),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -368,11 +380,12 @@ pub struct RoutingChain {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NewRoutingChain {
-    pub name: String,
+    #[serde(default)]
+    pub name: Option<String>,
     pub title: String,
     pub description: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub rules: Vec<Rule>,
+    #[serde(default)]
+    pub rules: Option<Vec<Rule>>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,
     #[serde(rename = "updatedAt", default, skip_serializing_if = "Option::is_none")]
@@ -385,8 +398,8 @@ pub struct NewRoutingChain {
 pub struct UpdateRoutingChain {
     pub title: String,
     pub description: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub rules: Vec<Rule>,
+    #[serde(default)]
+    pub rules: Option<Vec<Rule>>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,
     #[serde(rename = "updatedAt", default, skip_serializing_if = "Option::is_none")]
@@ -401,6 +414,8 @@ pub struct Hub {
     pub title: String,
     pub fqdn: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub server_address: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub server_port: Option<u16>,
     pub server_cert: String,
     pub server_cert_key: String,
@@ -410,7 +425,7 @@ pub struct Hub {
     pub realm: Option<String>, // readOnly
     #[serde(skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>, // readOnly
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub attributes: serde_json::Value,
     #[serde(default = "Utc::now")]
     pub created_at: DateTime<Utc>,
@@ -425,6 +440,7 @@ pub struct NewHub {
     pub name: String,
     pub title: String,
     pub fqdn: String,
+    pub server_address: Option<String>,
     pub server_port: Option<u16>,
     pub server_cert: String,
     pub server_cert_key: String,
@@ -443,6 +459,7 @@ pub struct NewHub {
 pub struct UpdateHub {
     pub title: String,
     pub fqdn: String,
+    pub server_address: Option<String>,
     pub server_port: Option<u16>,
     pub server_cert: String,
     pub server_cert_key: String,
@@ -464,7 +481,7 @@ pub struct Service {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     pub realm: String,
-    pub provider: Vec<String>,
+    pub provider: String,
     pub consumers: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub availability_management: Option<AvailabilityManagement>,
@@ -486,11 +503,15 @@ pub struct AvailabilityManagement {
     pub cluster_manager_urn: String,
     pub service_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub start_at: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stop_at: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub ondemand_start: Option<bool>,
+    pub ondemand_start_on_consumer: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ondemand_start_on_payload: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub idle_timeout: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -498,15 +519,11 @@ pub struct AvailabilityManagement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub command: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub env: Option<Vec<EnvVar>>,
+    pub options: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub env: Option<HashMap<String, String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mount_points: Option<Vec<MountPoint>>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct EnvVar {
-    pub name: String,
-    pub value: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -522,7 +539,7 @@ pub struct NewService {
     pub name: String,
     pub title: String,
     pub description: Option<String>,
-    pub provider: Vec<String>,
+    pub provider: String,
     pub consumers: Vec<String>,
     pub availability_management: Option<AvailabilityManagement>,
     pub singleton: Option<bool>,
@@ -538,7 +555,7 @@ pub struct NewService {
 pub struct UpdateService {
     pub title: String,
     pub description: Option<String>,
-    pub provider: Vec<String>,
+    pub provider: String,
     pub consumers: Vec<String>,
     pub availability_management: Option<AvailabilityManagement>,
     pub singleton: Option<bool>,

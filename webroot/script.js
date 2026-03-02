@@ -218,13 +218,21 @@ document.addEventListener('DOMContentLoaded', () => {
         cacertInput.rows = 5;
         cacertInput.value = item.cacert || '';
 
-        const signingKeyInput = createFormGroup(form, item, 'Signing Key', createInputElement('textarea'), {
-            description: 'The private key used for signing tokens in PEM format.',
-            example: 'a-very-secret-signing-key-that-is-long',
+        const deviceIdSigningKeyInput = createFormGroup(form, item, 'Device ID Signing Key', createInputElement('textarea'), {
+            description: 'The private key used for signing Device IDs in PEM format.',
+            example: '-----BEGIN PRIVATE KEY-----\n...',
             required: true
         });
-        signingKeyInput.rows = 2;
-        signingKeyInput.value = item.signingKey || '';
+        deviceIdSigningKeyInput.rows = 5;
+        deviceIdSigningKeyInput.value = item.deviceIdSigningKey || '';
+
+        const deviceIdVerificationKeyInput = createFormGroup(form, item, 'Device ID Verification Key', createInputElement('textarea'), {
+            description: 'The public key used for verifying Device IDs in PEM format.',
+            example: '-----BEGIN PUBLIC KEY-----\n...',
+            required: true
+        });
+        deviceIdVerificationKeyInput.rows = 5;
+        deviceIdVerificationKeyInput.value = item.deviceIdVerificationKey || '';
 
         const sessionTimeoutInput = createFormGroup(form, item, 'Session Timeout (sec)', createInputElement('input'), {
             description: 'Session token expiration in seconds. Defaults to 2592000 (30 days).',
@@ -260,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         detailsContainer.appendChild(form);
 
-        return { form, titleInput, descriptionInput, cacertInput, signingKeyInput, sessionTimeoutInput, administratorsInput, expiredAtInput, disabledInput };
+        return { form, titleInput, descriptionInput, cacertInput, deviceIdSigningKeyInput, deviceIdVerificationKeyInput, sessionTimeoutInput, administratorsInput, expiredAtInput, disabledInput };
     };
 
     // --- Details UI Builder for Zone ---
@@ -382,6 +390,12 @@ document.addEventListener('DOMContentLoaded', () => {
         fqdnInput.size = 50;
         fqdnInput.value = item.fqdn || '';
 
+        const serverAddressInput = createFormGroup(form, item, 'Server Address', createInputElement('input'), {
+            description: 'The IP address of the SPN Hub server.',
+            example: '0.0.0.0'
+        });
+        serverAddressInput.value = item.serverAddress || '';
+
         const serverPortInput = createFormGroup(form, item, 'Server Port', createInputElement('input'), {
             description: 'The port number of the SPN Hub server. Defaults to 443.',
             example: '443'
@@ -408,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // No custom attributes for Hub
         const attributesContainer = document.createElement('div'); // Dummy container
 
-        return { form, nameInput, titleInput, descriptionInput, fqdnInput, serverPortInput, serverCertInput, serverCertKeyInput, attributesContainer };
+        return { form, nameInput, titleInput, descriptionInput, fqdnInput, serverAddressInput, serverPortInput, serverCertInput, serverCertKeyInput, attributesContainer };
     };
 
     // --- Details UI Builder for VirtualHost ---
@@ -463,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
         subdomainInput.size = 50;
         subdomainInput.value = item.subdomain || '';
 
-        const routingChainInput = createFormGroup(form, item, 'Routing Chain', createInputElement('input'), { description: 'URN of the routing chain that handles requests.', example: 'urn:chip-in:service:example-realm:example-routing-chain', required: true });
+        const routingChainInput = createFormGroup(form, item, 'Routing Chain', createInputElement('input'), { description: 'URN of the routing chain that handles requests.', example: 'urn:chip-in:service:example-realm:example-routing-chain' });
         routingChainInput.size = 50;
         routingChainInput.value = item.routingChain || '';
 
@@ -492,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
             description: 'Server certificate in PEM format. Can be a chain.'
         });
         certificateInput.rows = 8;
-        certificateInput.value = item.certificate ? item.certificate.join('\n') : '';
+        certificateInput.value = item.certificate || '';
 
         const keyInput = createFormGroup(form, item, 'Key (PEM)', createInputElement('textarea'), {
             description: 'Private key for the server certificate in PEM format.'
@@ -550,14 +564,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const descriptionInput = createFormGroup(form, item, 'Description', createInputElement('textarea'), { description: 'A description for the routing chain.', example: 'Handles all incoming requests for the main service.' });
         descriptionInput.value = item.description || '';
 
-        const rulesInput = createFormGroup(form, item, 'Rules (array of JSON)', createInputElement('textarea'), {
-            description: `An array of rules. Each rule has a 'match' condition (evalexpr format) and an 'action' object. Valid action types are: setDeviceId, checkoutServices, proxy, redirect, jump, setVariables, setHeaders, authentication.`,
+        const rulesInput = createFormGroup(form, item, 'Rules', createInputElement('textarea'), {
+            description: `An array of rules. Each rule has a 'match' condition (evalexpr format) and an 'action' object. Valid action types are: proxy, redirect, returnStaticText, requireAuthentication, setUpstreamRequestHeader, setDownstreamResponseHeader.`,
             example: JSON.stringify([
                 {
                     "match": "request.path.starts_with(\"/api/\")",
                     "action": {
                         "type": "proxy",
-                        "target": "http://backend-service:8080"
+                        "upstream": "http://backend-service:8080"
                     }
                 }
             ], null, 2)
@@ -577,11 +591,11 @@ document.addEventListener('DOMContentLoaded', () => {
             helperContainer.appendChild(helperTitle);
 
             const ruleTemplates = {
-                'Proxy': { match: 'request.path.starts_with("/api/")', action: { type: 'proxy', target: 'http://backend-service.internal' } },
-                'Redirect': { match: 'request.path == "/old-path"', action: { type: 'redirect', location: 'https://example.com/new-path', status: 302 } },
-                'Set Headers': { match: 'true', action: { type: 'setHeaders', headers: { 'X-Custom-Header': 'MyValue' } } },
-                'Authentication': { match: 'request.path.starts_with("/admin/")', action: { type: 'authentication', authenticator: 'urn:chip-in:service:your-realm:auth-service', allow: 'claims.groups.contains("admin")' } },
-                'Jump': { match: 'request.path == "/jump"', action: { type: 'jump', chain: 'urn:chip-in:routing-chain:your-realm:another-chain' } },
+                'Proxy': { match: 'request.path.starts_with("/api/")', action: { type: 'proxy', upstream: 'http://backend-service.internal' } },
+                'Redirect': { match: 'request.path == "/old-path"', action: { type: 'redirect', url: 'https://example.com/new-path' } },
+                'Return Static Text': { match: 'request.path == "/robots.txt"', action: { type: 'returnStaticText', content: 'User-agent: *', status: 200 } },
+                'Require Authentication': { match: 'request.path.starts_with("/admin/")', action: { type: 'requireAuthentication', authScopeName: 'admin', protectedUpstream: 'http://admin.internal', oidcClientId: 'client', oidcClientSecret: 'secret', oidcAuthorizationEndpoint: 'https://idp/auth', oidcRedirectUrl: 'https://me/cb', oidcTokenEndpoint: 'https://idp/token' } },
+                'Set Upstream Header': { match: 'true', action: { type: 'setUpstreamRequestHeader', name: 'X-Custom', value: 'Value' } },
             };
 
             Object.entries(ruleTemplates).forEach(([name, template]) => {
@@ -731,12 +745,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         descriptionInput.value = item.description || '';
 
-        const providerInput = createFormGroup(form, item, 'Provider (URNs, comma-separated)', createInputElement('textarea'), {
-            description: 'A list of provider identifiers (URNs) for the service.',
-            example: 'oidc-idp-1,oidc-idp-2',
+        const providerInput = createFormGroup(form, item, 'Provider (URN)', createInputElement('input'), {
+            description: 'The provider identifier (URN) for the service.',
+            example: 'urn:chip-in:service:provider',
             required: true
         });
-        providerInput.value = (item.provider || []).join(', ');
+        providerInput.size = 50;
+        providerInput.value = item.provider || '';
 
         const consumersInput = createFormGroup(form, item, 'Consumers (URNs, comma-separated)', createInputElement('textarea'), {
             description: 'A list of consumer identifiers (URNs) for the service.',
@@ -777,6 +792,13 @@ document.addEventListener('DOMContentLoaded', () => {
         serviceIdInput.size = 50;
         serviceIdInput.value = am.serviceId || '';
 
+        const amDescriptionInput = createFormGroup(form, am, 'AM Description', createInputElement('textarea'), {
+            description: 'Description for availability management.',
+            example: 'auto startup triggered when the consumer is ready'
+        });
+        amDescriptionInput.rows = 2;
+        amDescriptionInput.value = am.description || '';
+
         const startAtInput = createFormGroup(form, am, 'Start At', createInputElement('input'), {
             description: 'Time to start the service (ISO 8601).',
             example: '2024-01-01T09:00:00Z'
@@ -791,17 +813,27 @@ document.addEventListener('DOMContentLoaded', () => {
         stopAtInput.size = 50;
         stopAtInput.value = am.stopAt || '';
 
-        const ondemandStartGroup = document.createElement('div');
-        ondemandStartGroup.className = 'form-group form-group-checkbox';
-        const ondemandStartInput = createInputElement('input');
-        ondemandStartInput.type = 'checkbox';
-        ondemandStartInput.checked = !!am.ondemandStart;
-        const ondemandStartLabel = document.createElement('label');
-        ondemandStartLabel.appendChild(ondemandStartInput);
-        ondemandStartLabel.appendChild(document.createTextNode(' Ondemand Start'));
-        ondemandStartLabel.title = 'If checked, the service can be started on-demand.';
-        ondemandStartGroup.appendChild(ondemandStartLabel);
-        form.appendChild(ondemandStartGroup);
+        const ondemandStartConsumerGroup = document.createElement('div');
+        ondemandStartConsumerGroup.className = 'form-group form-group-checkbox';
+        const ondemandStartConsumerInput = createInputElement('input');
+        ondemandStartConsumerInput.type = 'checkbox';
+        ondemandStartConsumerInput.checked = !!am.ondemandStartOnConsumer;
+        const ondemandStartConsumerLabel = document.createElement('label');
+        ondemandStartConsumerLabel.appendChild(ondemandStartConsumerInput);
+        ondemandStartConsumerLabel.appendChild(document.createTextNode(' Ondemand Start (Consumer)'));
+        ondemandStartConsumerGroup.appendChild(ondemandStartConsumerLabel);
+        form.appendChild(ondemandStartConsumerGroup);
+
+        const ondemandStartPayloadGroup = document.createElement('div');
+        ondemandStartPayloadGroup.className = 'form-group form-group-checkbox';
+        const ondemandStartPayloadInput = createInputElement('input');
+        ondemandStartPayloadInput.type = 'checkbox';
+        ondemandStartPayloadInput.checked = !!am.ondemandStartOnPayload;
+        const ondemandStartPayloadLabel = document.createElement('label');
+        ondemandStartPayloadLabel.appendChild(ondemandStartPayloadInput);
+        ondemandStartPayloadLabel.appendChild(document.createTextNode(' Ondemand Start (Payload)'));
+        ondemandStartPayloadGroup.appendChild(ondemandStartPayloadLabel);
+        form.appendChild(ondemandStartPayloadGroup);
 
         const idleTimeoutInput = createFormGroup(form, am, 'Idle Timeout (sec)', createInputElement('input'), {
             description: 'Timeout in seconds to stop the service after being idle.',
@@ -823,9 +855,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         commandInput.value = am.command ? JSON.stringify(am.command) : '';
 
-        const envInput = createFormGroup(form, am, 'Environment (JSON array)', createInputElement('textarea'), {
-            description: 'Environment variables as a JSON array of {name, value} objects.',
-            example: '[{"name": "ENV_VAR", "value": "some_value"}]'
+        const optionsInput = createFormGroup(form, am, 'Options (JSON array)', createInputElement('textarea'), {
+            description: 'Arguments for the command as a JSON array of strings.',
+            example: '["--network", "spnnet"]'
+        });
+        optionsInput.value = am.options ? JSON.stringify(am.options) : '';
+
+        const envInput = createFormGroup(form, am, 'Environment Variables (JSON object)', createInputElement('textarea'), {
+            description: 'Environment variables as a JSON object of {key: value}.',
+            example: '{"ENV_VAR": "some_value"}'
         });
         envInput.value = am.env ? JSON.stringify(am.env, null, 2) : '';
 
@@ -839,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const attributesContainer = document.createElement('div'); // Dummy container for compatibility
 
-        return { form, nameInput, titleInput, descriptionInput, providerInput, consumersInput, singletonInput, clusterManagerUrnInput, serviceIdInput, startAtInput, stopAtInput, ondemandStartInput, idleTimeoutInput, imageInput, commandInput, envInput, mountPointsInput, attributesContainer };
+        return { form, nameInput, titleInput, descriptionInput, providerInput, consumersInput, singletonInput, clusterManagerUrnInput, serviceIdInput, amDescriptionInput, startAtInput, stopAtInput, ondemandStartConsumerInput, ondemandStartPayloadInput, idleTimeoutInput, imageInput, commandInput, optionsInput, envInput, mountPointsInput, attributesContainer };
     };
 
     // --- Item Type Configuration ---
@@ -855,7 +893,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     title: inputs.titleInput.value,
                     description: inputs.descriptionInput.value,
                     cacert: inputs.cacertInput.value,
-                    signingKey: inputs.signingKeyInput.value,
+                    deviceIdSigningKey: inputs.deviceIdSigningKeyInput.value,
+                    deviceIdVerificationKey: inputs.deviceIdVerificationKeyInput.value,
                     sessionTimeout: sessionTimeout ? parseInt(sessionTimeout, 10) : null,
                     administrators: administrators ? administrators.split(',').map(s => s.trim()).filter(Boolean) : null,
                     expiredAt: inputs.expiredAtInput.value || null,
@@ -885,6 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: inputs.titleInput.value,
                 description: inputs.descriptionInput.value,
                 fqdn: inputs.fqdnInput.value,
+                serverAddress: inputs.serverAddressInput.value || null,
                 serverPort: parseInt(inputs.serverPortInput.value, 10) || 443,
                 serverCert: inputs.serverCertInput.value,
                 serverCertKey: inputs.serverCertKeyInput.value,
@@ -911,8 +951,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         throw new Error(`Invalid JSON in Access Log Format: ${e.message}`);
                     }
                 }
-                const certs = inputs.certificateInput.value;
-                const certificate = certs ? certs.split('\n').filter(c => c.trim() !== '') : null;
+                const certsText = inputs.certificateInput.value.trim();
+                const certificate = certsText || null;
                 const accessLogMaxValueLength = inputs.accessLogMaxValueLengthInput.value;
 
                 return {
@@ -920,7 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     title: inputs.titleInput.value,
                     description: inputs.descriptionInput.value,
                     subdomain: inputs.subdomainInput.value,
-                    routingChain: inputs.routingChainInput.value,
+                    routingChain: inputs.routingChainInput.value || null,
                     accessLogRecorder: inputs.accessLogRecorderInput.value || null,
                     accessLogMaxValueLength: accessLogMaxValueLength ? parseInt(accessLogMaxValueLength, 10) : null,
                     accessLogFormat: accessLogFormat,
@@ -933,7 +973,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: name,
                 title: `New Virtual Host ${name}`,
                 subdomain: 'urn:chip-in:subdomain:your-realm:your-subdomain',
-                routingChain: 'urn:chip-in:service:your-realm:your-routing-chain',
+                routingChain: null,
             }),
         },
         'routing-chains': {
@@ -990,15 +1030,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     availabilityManagement = {
                         clusterManagerUrn: amUrn,
                         serviceId: amSid,
-                        ondemandStart: inputs.ondemandStartInput.checked,
+                        ondemandStartOnConsumer: inputs.ondemandStartConsumerInput.checked,
+                        ondemandStartOnPayload: inputs.ondemandStartPayloadInput.checked,
                     };
-
+                    
+                    if (inputs.amDescriptionInput.value) availabilityManagement.description = inputs.amDescriptionInput.value;
                     if (inputs.startAtInput.value) availabilityManagement.startAt = inputs.startAtInput.value;
                     if (inputs.stopAtInput.value) availabilityManagement.stopAt = inputs.stopAtInput.value;
                     if (inputs.idleTimeoutInput.value) availabilityManagement.idleTimeout = parseInt(inputs.idleTimeoutInput.value, 10);
                     if (inputs.imageInput.value) availabilityManagement.image = inputs.imageInput.value;
 
                     try {
+                        if (inputs.optionsInput.value) availabilityManagement.options = JSON.parse(inputs.optionsInput.value);
                         if (inputs.commandInput.value) availabilityManagement.command = JSON.parse(inputs.commandInput.value);
                         if (inputs.envInput.value) availabilityManagement.env = JSON.parse(inputs.envInput.value);
                         if (inputs.mountPointsInput.value) availabilityManagement.mountPoints = JSON.parse(inputs.mountPointsInput.value);
@@ -1011,7 +1054,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: item.name,
                     title: inputs.titleInput.value,
                     description: inputs.descriptionInput.value,
-                    provider: inputs.providerInput.value.split(',').map(s => s.trim()).filter(Boolean),
+                    provider: inputs.providerInput.value,
                     consumers: inputs.consumersInput.value.split(',').map(s => s.trim()).filter(Boolean),
                     singleton: inputs.singletonInput.checked,
                     availabilityManagement: availabilityManagement,
@@ -1021,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: name,
                 title: name,
                 description: `New Service ${name}`,
-                provider: [],
+                provider: "",
                 consumers: [],
             }),
         },
@@ -1283,7 +1326,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     title: name, // Use name as title for new realms
                     description: `New realm ${name}`,
                     cacert: '-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----',
-                    signingKey: 'a-very-secret-signing-key-that-is-long-enough',
+                    deviceIdSigningKey: '-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----',
+                    deviceIdVerificationKey: '-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----',
                     disabled: false,
                 }),
             });

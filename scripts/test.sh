@@ -64,7 +64,8 @@ run_test "Creating a new realm" 201 \
     "title": "Test Realm",
     "description": "A realm for testing",
     "cacert": "-----BEGIN CERTIFICATE-----\\n...\\n-----END CERTIFICATE-----",
-    "signingKey": "a-very-secret-signing-key",
+    "deviceIdSigningKey": "-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----",
+    "deviceIdVerificationKey": "-----BEGIN PUBLIC KEY-----\\n...\\n-----END PUBLIC KEY-----",
     "disabled": false
   }'
 

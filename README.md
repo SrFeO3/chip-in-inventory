@@ -35,6 +35,14 @@ To get the application running locally, you need to have Docker and Docker Compo
     docker compose down
     ```
 
+## Development
+
+For faster iteration during development or testing, you can run only the `etcd` backend:
+
+```bash
+docker run -d --rm -p 2379:2379 --name etcd-dev quay.io/coreos/etcd:v3.5.14 /usr/local/bin/etcd --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379
+```
+
 ## Usage
 
 Once the services are running, you can interact with the application through the Web UI or the REST API.

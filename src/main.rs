@@ -214,7 +214,8 @@ async fn create_realm(
         title: payload.title,
         urn: Some(format!("urn:chip-in:realm:{}", payload.name)),
         cacert: payload.cacert,
-        signing_key: payload.signing_key,
+        device_id_signing_key: payload.device_id_signing_key,
+        device_id_verification_key: payload.device_id_verification_key,
         session_timeout: payload.session_timeout,
         administrators: payload.administrators,
         expired_at: payload.expired_at,
@@ -254,7 +255,8 @@ async fn update_realm(
 
     realm.description = payload.description;
     realm.title = payload.title;
-    realm.signing_key = payload.signing_key;
+    realm.device_id_signing_key = payload.device_id_signing_key;
+    realm.device_id_verification_key = payload.device_id_verification_key;
     realm.cacert = payload.cacert;
     realm.session_timeout = payload.session_timeout;
     realm.administrators = payload.administrators;
@@ -420,6 +422,7 @@ async fn create_hub(
         description: payload.description,
         title: payload.title,
         fqdn: payload.fqdn,
+        server_address: payload.server_address,
         server_port: payload.server_port,
         server_cert: payload.server_cert,
         server_cert_key: payload.server_cert_key,
@@ -467,6 +470,7 @@ async fn update_hub(
     hub.title = payload.title;
     hub.fqdn = payload.fqdn;
     hub.description = payload.description;
+    hub.server_address = payload.server_address;
     hub.server_port = payload.server_port;
     hub.server_cert = payload.server_cert;
     hub.server_cert_key = payload.server_cert_key;
@@ -529,7 +533,8 @@ async fn create_routing_chain(
     Path(realm_id): Path<String>,
     Json(payload): Json<NewRoutingChain>,
 ) -> Result<(StatusCode, Json<RoutingChain>), ApiError> {
-    if payload.name.is_empty() {
+    let name = payload.name.unwrap_or_else(|| "default".to_string());
+    if name.is_empty() {
         return Err(ApiError::BadRequest(
             "RoutingChain name cannot be empty".to_string(),
         ));
@@ -537,12 +542,12 @@ async fn create_routing_chain(
 
     let now = chrono::Utc::now();
     let mut rchain = RoutingChain {
-        name: payload.name,
+        name,
         title: payload.title,
         description: payload.description,
         urn: None,   // Populated before sending
         realm: None, // Populated before sending
-        rules: payload.rules,
+        rules: payload.rules.unwrap_or_default(),
         created_at: payload.created_at.unwrap_or(now), // Use provided or now
         updated_at: payload.updated_at.unwrap_or(now), // Use provided or now
     };
@@ -551,8 +556,12 @@ async fn create_routing_chain(
     repo.get_realm(&realm_id).await?;
 
     // Check for conflict
-    if repo.get_routing_chain(&realm_id, &rchain.name).await.is_ok() {
-        return Err(ApiError::Conflict(format!("RoutingChain '{}' already exists in realm '{}'", rchain.name, realm_id)));
+    // Per spec, only one routing chain is allowed per realm.
+    if repo.get_routing_chain(&realm_id).await.is_ok() {
+        return Err(ApiError::Conflict(format!(
+            "A RoutingChain already exists in realm '{}'. Only one is allowed.",
+            realm_id
+        )));
     }
 
     repo.save_routing_chain(&realm_id, &rchain).await?;
@@ -567,7 +576,12 @@ async fn get_routing_chain(
     State(repo): State<AppState>,
     Path((realm_id, routing_chain_id)): Path<(String, String)>,
 ) -> Result<Json<RoutingChain>, ApiError> {
-    let mut rchain = repo.get_routing_chain(&realm_id, &routing_chain_id).await?;
+    let mut rchain = repo.get_routing_chain(&realm_id).await?;
+
+    // Since there is only one chain per realm, we check if the requested ID matches the stored name.
+    if rchain.name != routing_chain_id {
+        return Err(ApiError::NotFound);
+    }
 
     populate_routing_chain_fields(&mut rchain, &realm_id);
     Ok(Json(rchain))
@@ -579,13 +593,18 @@ async fn update_routing_chain(
     Path((realm_id, routing_chain_id)): Path<(String, String)>,
     Json(payload): Json<UpdateRoutingChain>,
 ) -> Result<Json<RoutingChain>, ApiError> {
-    let mut rchain = repo.get_routing_chain(&realm_id, &routing_chain_id).await?;
+    let mut rchain = repo.get_routing_chain(&realm_id).await?;
+
+    // Since there is only one chain per realm, we check if the requested ID matches the stored name.
+    if rchain.name != routing_chain_id {
+        return Err(ApiError::NotFound);
+    }
 
     rchain.description = payload.description;
     rchain.title = payload.title;
     rchain.created_at = payload.created_at.unwrap_or(rchain.created_at); // Preserve original if not provided
     rchain.updated_at = payload.updated_at.unwrap_or_else(chrono::Utc::now); // Use provided or now
-    rchain.rules = payload.rules;
+    rchain.rules = payload.rules.unwrap_or_default();
 
     repo.save_routing_chain(&realm_id, &rchain).await?;
 
@@ -599,9 +618,15 @@ async fn delete_routing_chain(
     State(repo): State<AppState>,
     Path((realm_id, routing_chain_id)): Path<(String, String)>,
 ) -> Result<StatusCode, ApiError> {
-    let deleted = repo
-        .delete_routing_chain(&realm_id, &routing_chain_id)
-        .await?;
+    // Get the existing chain to verify the name.
+    // This also handles the case where no chain exists (repo.get_routing_chain will return NotFound).
+    let rchain = repo.get_routing_chain(&realm_id).await?;
+    if rchain.name != routing_chain_id {
+        return Err(ApiError::NotFound);
+    }
+
+    // If we are here, the name matches, so we can proceed with deletion.
+    let deleted = repo.delete_routing_chain(&realm_id).await?;
     if deleted {
         Ok(StatusCode::NO_CONTENT)
     } else {

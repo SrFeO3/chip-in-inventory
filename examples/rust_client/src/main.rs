@@ -3,241 +3,297 @@
 // 1. Fetch all resources from the API and build a hierarchical in-memory representation.
 // 2. Use the in-memory data to perform a specific task, such as finding a matching routing action for a given request.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use reqwest::Error;
 use std::sync::Arc;
 use futures::future::join_all;
+use std::collections::HashMap;
 
 // --- Data Structures based on OpenAPI schemas ---
 // This struct is defined based on the Realm.yaml schema specification.
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 struct Realm {
     // Required fields
     name: String,
     title: String,
     cacert: String,
-    #[serde(rename = "signingKey")]
-    signing_key: String,
+    device_id_signing_key: String,
+    device_id_verification_key: String,
     disabled: bool,
 
     // Optional fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
-    #[serde(rename = "sessionTimeout")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     session_timeout: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     administrators: Option<Vec<String>>,
-    #[serde(rename = "expiredAt")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     expired_at: Option<String>,
 
     // readOnly field
+    #[serde(skip_serializing_if = "Option::is_none")]
     urn: Option<String>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 struct Zone {
     // Required fields
     name: String,
     title: String,
 
     // Optional fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
-    #[serde(rename = "dnsProvider")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     dns_provider: Option<String>,
-    #[serde(rename = "acmeCertificateProvider")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     acme_certificate_provider: Option<String>,
 
     // readOnly fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     urn: Option<String>,
-    realm: Option<String>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 struct Subdomain {
     // Required fields
     name: String,
     title: String,
 
     // Optional fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
-    #[serde(rename = "destinationRealm")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     destination_realm: Option<String>,
     #[serde(default)] // The schema has a default value of false
     share_cookie: bool,
 
     // readOnly fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     urn: Option<String>,
-    zone: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     fqdn: Option<String>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 struct Hub {
     // Required fields
     name: String,
     title: String,
     fqdn: String,
-    #[serde(rename = "serverCert")]
     server_cert: String,
-    #[serde(rename = "serverCertKey")]
     server_cert_key: String,
+    #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
+    attributes: serde_json::Value,
 
     // Optional fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
-    #[serde(rename = "serverPort")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    server_address: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     server_port: Option<u16>,
 
     // readOnly fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     urn: Option<String>,
-    realm: Option<String>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 struct Service {
     // Required fields
     name: String,
     title: String,
-    realm: String,
-    provider: Vec<String>,
+    provider: String,
     consumers: Vec<String>,
 
     // Optional fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
-    #[serde(rename = "availabilityManagement")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     availability_management: Option<AvailabilityManagement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     singleton: Option<bool>,
 
     // readOnly fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     urn: Option<String>,
-    hub: Option<String>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct AvailabilityManagement {
     cluster_manager_urn: String,
     service_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     start_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     stop_at: Option<String>,
-    ondemand_start: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ondemand_start_on_consumer: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ondemand_start_on_payload: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     idle_timeout: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     image: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     command: Option<Vec<String>>,
-    env: Option<Vec<EnvVar>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    options: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    env: Option<HashMap<String, String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     mount_points: Option<Vec<MountPoint>>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
-struct EnvVar {
-    name: String,
-    value: String,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 struct MountPoint {
-    #[serde(rename = "volumeSize")]
     volume_size: i32,
     target: String,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 struct VirtualHost {
     // Required fields
     name: String,
     title: String,
     subdomain: String,
-    #[serde(rename = "routingChain")]
-    routing_chain: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    routing_chain: Option<String>,
 
     // Optional fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
-    #[serde(rename = "accessLogRecorder")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     access_log_recorder: Option<String>,
-    #[serde(rename = "accessLogMaxValueLength")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     access_log_max_value_length: Option<i32>,
-    #[serde(rename = "accessLogFormat")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     access_log_format: Option<serde_json::Value>,
-    certificate: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    certificate: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     disabled: Option<bool>,
 
     // readOnly fields
-    urn: Option<String>,
-    realm: Option<String>,
+    #[serde(skip_serializing)]
     fqdn: Option<String>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 struct RoutingChain {
     // Required fields
     name: String,
     title: String,
 
     // Optional fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
     #[serde(default)]
     rules: Vec<Rule>,
-
-    // readOnly fields
-    urn: Option<String>,
-    realm: Option<String>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 struct Rule {
     #[serde(rename = "match")]
     match_condition: String,
     action: Action,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
-#[serde(tag = "type", rename_all = "camelCase")]
-enum Action {
-    SetDeviceId(serde_json::Value),
-    CheckoutServices(serde_json::Value),
-    Proxy(ProxyAction),
-    Redirect(serde_json::Value),
-    Jump(serde_json::Value),
-    SetVariables(serde_json::Value),
-    SetHeaders(serde_json::Value),
-    Authentication(serde_json::Value),
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Proxy {
+    upstream: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    auth_scope_name: Option<String>,
 }
 
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct ProxyAction {
-    target: String,
-    #[serde(default)]
-    no_body: bool,
+struct Redirect {
+    url: String,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct ReturnStaticText {
+    content: String,
+    status: u16,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct RequireAuthentication {
+    auth_scope_name: String,
+    protected_upstream: String,
+    oidc_client_id: String,
+    oidc_client_secret: String,
+    oidc_authorization_endpoint: String,
+    oidc_redirect_url: String,
+    oidc_token_endpoint: String,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct SetUpstreamRequestHeader {
+    name: String,
+    value: String,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct SetDownstreamResponseHeader {
+    name: String,
+    value: String,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(tag = "type", rename_all = "camelCase")]
+enum Action {
+    Proxy(Proxy),
+    Redirect(Redirect),
+    ReturnStaticText(ReturnStaticText),
+    RequireAuthentication(RequireAuthentication),
+    SetUpstreamRequestHeader(SetUpstreamRequestHeader),
+    SetDownstreamResponseHeader(SetDownstreamResponseHeader),
 }
 
 // --- In-memory representation for hierarchical data (Nodes) ---
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ZoneNode {
+    #[serde(flatten)]
     zone: Zone,
     subdomains: Vec<Subdomain>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct HubNode {
+    #[serde(flatten)]
     hub: Hub,
     services: Vec<Service>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct RealmNode {
+    #[serde(flatten)]
     realm: Realm,
     zones: Vec<ZoneNode>,
     hubs: Vec<HubNode>,
@@ -245,31 +301,26 @@ struct RealmNode {
     routing_chains: Vec<RoutingChain>,
 }
 
-
-// --- Generic Fetch Function ---
-async fn fetch_json<T: for<'de> Deserialize<'de>>(url: &str, client: &reqwest::Client) -> Result<T, Error> {
-    client.get(url).send().await?.json::<T>().await
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Inventory {
+    realms: Vec<RealmNode>,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
-    let api_base_url = "http://localhost:3000/v1";
+/// Fetches the entire inventory from the API and builds a hierarchical representation.
+/// This function can replace the logic that loads configuration from a YAML file.
+async fn load_inventory(api_base_url: &str) -> Result<Vec<RealmNode>, Error> {
     let client = Arc::new(reqwest::Client::new());
 
-    // --- Phase 1: Fetching all data from the API ---
-    println!("--- Phase 1: Fetching all data from the API ---\n");
-
-    let realms: Vec<Realm> = match fetch_json(&format!("{}/realms", api_base_url), &client).await {
-        Ok(r) => r,
-        Err(e) => {
-            eprintln!("Failed to fetch realms: {}", e);
-            return Ok(());
-        }
-    };
-    println!("Found {} realm(s). Fetching sub-resources...", realms.len());
+    let realms: Vec<Realm> = client
+        .get(&format!("{}/realms", api_base_url))
+        .send()
+        .await?
+        .json()
+        .await?;
 
     if realms.is_empty() {
-        return Ok(());
+        return Ok(vec![]);
     }
 
     // For each realm, fetch its sub-resources and build an in-memory representation.
@@ -278,13 +329,10 @@ async fn main() -> Result<(), Error> {
         let client_clone = Arc::clone(&client);
         let api_base_url_clone = api_base_url.to_string();
         let task = tokio::spawn(async move {
-            let realm_name = realm.name.clone();
-            println!("[{}] Fetching resources...", realm_name);
-
             // --- Fetch Zones and their Subdomains ---
             let mut zone_nodes = Vec::new();
             let zones_url = format!("{}/realms/{}/zones", api_base_url_clone, realm.name);
-            if let Ok(zones) = fetch_json::<Vec<Zone>>(&zones_url, &client_clone).await {
+            if let Ok(zones) = async { client_clone.get(&zones_url).send().await?.json::<Vec<Zone>>().await }.await {
                 let mut sub_tasks = Vec::new();
                 for zone in zones {
                     let client_clone2 = Arc::clone(&client_clone);
@@ -293,7 +341,7 @@ async fn main() -> Result<(), Error> {
                     sub_tasks.push(tokio::spawn(async move {
                         let mut subdomains = Vec::new();
                         let subdomains_url = format!("{}/realms/{}/zones/{}/subdomains", api_base_url_clone2, realm_name, zone.name);
-                        if let Ok(fetched_subdomains) = fetch_json::<Vec<Subdomain>>(&subdomains_url, &client_clone2).await {
+                        if let Ok(fetched_subdomains) = async { client_clone2.get(&subdomains_url).send().await?.json::<Vec<Subdomain>>().await }.await {
                            subdomains = fetched_subdomains;
                         }
                         ZoneNode { zone, subdomains }
@@ -305,7 +353,7 @@ async fn main() -> Result<(), Error> {
             // --- Fetch Hubs and their Services ---
             let mut hub_nodes = Vec::new();
             let hubs_url = format!("{}/realms/{}/hubs", api_base_url_clone, realm.name);
-            if let Ok(hubs) = fetch_json::<Vec<Hub>>(&hubs_url, &client_clone).await {
+            if let Ok(hubs) = async { client_clone.get(&hubs_url).send().await?.json::<Vec<Hub>>().await }.await {
                 let mut sub_tasks = Vec::new();
                 for hub in hubs {
                     let client_clone2 = Arc::clone(&client_clone);
@@ -314,7 +362,7 @@ async fn main() -> Result<(), Error> {
                     sub_tasks.push(tokio::spawn(async move {
                         let mut services = Vec::new();
                         let services_url = format!("{}/realms/{}/hubs/{}/services", api_base_url_clone2, realm_name, hub.name);
-                        if let Ok(fetched_services) = fetch_json::<Vec<Service>>(&services_url, &client_clone2).await {
+                        if let Ok(fetched_services) = async { client_clone2.get(&services_url).send().await?.json::<Vec<Service>>().await }.await {
                             services = fetched_services;
                         }
                         HubNode { hub, services }
@@ -325,13 +373,15 @@ async fn main() -> Result<(), Error> {
 
             // --- Fetch Virtual Hosts ---
             let vhosts_url = format!("{}/realms/{}/virtual-hosts", api_base_url_clone, realm.name);
-            let virtual_hosts = fetch_json::<Vec<VirtualHost>>(&vhosts_url, &client_clone).await.unwrap_or_default();
+            let virtual_hosts = async { client_clone.get(&vhosts_url).send().await?.json::<Vec<VirtualHost>>().await }
+                .await
+                .unwrap_or_default();
 
             // --- Fetch Routing Chains ---
             let rchains_url = format!("{}/realms/{}/routing-chains", api_base_url_clone, realm.name);
-            let routing_chains = fetch_json::<Vec<RoutingChain>>(&rchains_url, &client_clone).await.unwrap_or_default();
-
-            println!("[{}] ...Done.", realm_name);
+            let routing_chains = async { client_clone.get(&rchains_url).send().await?.json::<Vec<RoutingChain>>().await }
+                .await
+                .unwrap_or_default();
 
             // Return the fully populated in-memory realm object
             RealmNode {
@@ -347,51 +397,27 @@ async fn main() -> Result<(), Error> {
 
     // Wait for all realm-specific tasks to complete and collect the results
     let realm_nodes: Vec<RealmNode> = join_all(tasks).await.into_iter().filter_map(Result::ok).collect();
+    Ok(realm_nodes)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let api_base_url = "http://localhost:3000/v1";
+
+    // --- Phase 1: Fetching all data from the API ---
+    println!("--- Phase 1: Fetching all data from the API ---\n");
+    println!("Connecting to {} ...", api_base_url);
+
+    let realm_nodes = load_inventory(api_base_url).await?;
+    println!("Successfully loaded inventory with {} realm(s).", realm_nodes.len());
 
     println!("\n--- Phase 2: Usage Phase (Displaying hierarchical data) ---\n");
 
-    for r_node in &realm_nodes {
-        println!("Realm: {:#?}", r_node.realm);
+    let inventory = Inventory { realms: realm_nodes.into_iter().collect() };
 
-        if !r_node.zones.is_empty() {
-            println!("  - Zones:");
-            for z_node in &r_node.zones {
-                println!("    - Zone: {:#?}", z_node.zone);
-                if !z_node.subdomains.is_empty() {
-                    println!("      - Subdomains:");
-                    for subdomain in &z_node.subdomains {
-                        println!("        - Subdomain: {:#?}", subdomain);
-                    }
-                }
-            }
-        }
-
-        if !r_node.hubs.is_empty() {
-            println!("  - Hubs:");
-            for h_node in &r_node.hubs {
-                println!("    - Hub: {:#?}", h_node.hub);
-                if !h_node.services.is_empty() {
-                    println!("      - Services:");
-                    for service in &h_node.services {
-                        println!("        - Service: {:#?}", service);
-                    }
-                }
-            }
-        }
-        if !r_node.virtual_hosts.is_empty() {
-            println!("  - VirtualHosts:");
-            for vhost in &r_node.virtual_hosts {
-                println!("    - VirtualHost: {:#?}", vhost);
-            }
-        }
-
-        if !r_node.routing_chains.is_empty() {
-            println!("  - RoutingChains:");
-            for rchain in &r_node.routing_chains {
-                println!("    - RoutingChain: {:#?}", rchain);
-            }
-        }
-        println!(); // Add a blank line for readability
+    match serde_yaml::to_string(&inventory) {
+        Ok(yaml) => println!("{}", yaml),
+        Err(e) => eprintln!("Failed to serialize to YAML: {}", e),
     }
 
     // --- Phase 3: Usage Phase (Find a matching action from a routing-chain) ---
@@ -403,10 +429,13 @@ async fn main() -> Result<(), Error> {
 
     println!("Searching for an action for FQDN: '{}' and Path: '{}'...", sample_fqdn, sample_path);
 
-    match find_matching_action(&realm_nodes, sample_fqdn, sample_path) {
+    match find_matching_action(&inventory.realms, sample_fqdn, sample_path) {
         Some(action) => {
             println!("\nFound a matching action:");
-            println!("{:#?}", action);
+            match serde_yaml::to_string(&action) {
+                Ok(yaml) => println!("{}", yaml),
+                Err(e) => eprintln!("Failed to serialize action to YAML: {}", e),
+            }
         }
         None => {
             println!("\nNo matching action found for the given FQDN and path.");
@@ -422,12 +451,14 @@ fn find_matching_action(realm_nodes: &[RealmNode], fqdn: &str, path: &str) -> Op
         // 1. Find the VirtualHost that matches the FQDN.
         if let Some(vhost) = r_node.virtual_hosts.iter().find(|v| v.fqdn.as_deref() == Some(fqdn)) {
             // 2. Find the RoutingChain associated with the VirtualHost.
-            if let Some(rchain) = r_node.routing_chains.iter().find(|rc| rc.name == vhost.routing_chain) {
-                // 3. Iterate through the rules of the RoutingChain to find a match.
-                for rule in &rchain.rules {
-                    if rule_matches(&rule.match_condition, fqdn, path) {
-                        // 4. If a rule matches, return its action.
-                        return Some(rule.action.clone());
+            if let Some(rc_name) = &vhost.routing_chain {
+                if let Some(rchain) = r_node.routing_chains.iter().find(|rc| &rc.name == rc_name) {
+                    // 3. Iterate through the rules of the RoutingChain to find a match.
+                    for rule in &rchain.rules {
+                        if rule_matches(&rule.match_condition, fqdn, path) {
+                            // 4. If a rule matches, return its action.
+                            return Some(rule.action.clone());
+                        }
                     }
                 }
             }
@@ -438,54 +469,11 @@ fn find_matching_action(realm_nodes: &[RealmNode], fqdn: &str, path: &str) -> Op
 }
 
 /// A simple helper to evaluate if a rule's match condition is met.
-/// This is a basic implementation and does not support all complex syntaxes.
-fn rule_matches(match_condition: &str, fqdn: &str, path: &str) -> bool {
-    // Split conditions by '&&'
-    for condition in match_condition.split("&&") {
-        let trimmed_condition = condition.trim();
-        if !evaluate_single_condition(trimmed_condition, fqdn, path) {
-            // If any condition is false, the whole rule does not match.
-            return false;
-        }
-    }
-    // If all conditions are true, the rule matches.
+/// This is a placeholder implementation.
+fn rule_matches(match_condition: &str, _fqdn: &str, _path: &str) -> bool {
+    // In a real implementation, you would parse the 'match_condition' string (e.g., using a parser combinator or a scripting engine)
+    // and evaluate it against the request context (FQDN, path, headers, etc.).
+    // For this example, we'll just print the condition and return true to demonstrate the flow.
+    println!("    [Mock Evaluation] Checking condition: '{}'", match_condition);
     true
-}
-
-/// Evaluates a single condition like `path_prefix(...)` or `host(...)`.
-fn evaluate_single_condition(condition: &str, fqdn: &str, path: &str) -> bool {
-    if let Some(arg) = extract_arg(condition, "path_prefix") {
-        return path.starts_with(&arg);
-    }
-    if let Some(arg) = extract_arg(condition, "path") {
-        return path == arg;
-    }
-    if let Some(arg) = extract_arg(condition, "host") {
-        return fqdn == arg;
-    }
-    if let Some(arg) = extract_arg(condition, "method") {
-        // For this example, we are not checking the HTTP method, so we'll just log it.
-        // In a real scenario, you would pass the method to this function.
-        println!("[NOTE] 'method' condition with arg '{}' is not evaluated in this example.", arg);
-        return true; // Assume it matches for the sake of the example.
-    }
-
-    // If the condition is unknown, assume it doesn't match.
-    false
-}
-
-/// Extracts the argument from a function-like string, e.g., `path_prefix(`/api`)` -> `/api`.
-fn extract_arg<'a>(condition: &'a str, func_name: &str) -> Option<String> {
-    if condition.starts_with(func_name) && condition.contains('(') && condition.ends_with(')') {
-        let start = condition.find('(')? + 1;
-        let end = condition.rfind(')')?;
-        if start >= end {
-            return None;
-        }
-        // Extract the argument and trim quotes (`, ', ")
-        let arg = condition[start..end].trim();
-        let trimmed_arg = arg.trim_matches(|c| c == '`' || c == '\'' || c == '"');
-        return Some(trimmed_arg.to_string());
-    }
-    None
 }

@@ -29,7 +29,7 @@ services:
     volumes:
       - .:/app
     command: >
-      sh -c "pip install --no-cache-dir requests pyyaml && python scripts/import_inventory.py data/sample.yaml"
+      sh -c "pip install --no-cache-dir requests pyyaml && python scripts/import_inventory.py conf/config.yaml"
     environment:
       # Connect to the chip-in-inventory service within the Docker network
       - API_BASE_URL=http://chip-in-inventory:3000/v1
