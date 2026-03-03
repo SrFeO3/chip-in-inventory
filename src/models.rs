@@ -15,18 +15,18 @@ pub struct Realm {
     pub name: String, // Realm name
     pub title: String,
     pub created_at: DateTime<Utc>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>, // readOnly
     pub cacert: String,
     pub device_id_signing_key: String,
     pub device_id_verification_key: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub session_timeout: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub administrators: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub expired_at: Option<String>,
     pub disabled: bool,
     pub updated_at: DateTime<Utc>,
@@ -38,12 +38,16 @@ pub struct Realm {
 pub struct NewRealm {
     pub name: String,
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
     pub cacert: String,
     pub device_id_signing_key: String,
     pub device_id_verification_key: String,
+    #[serde(default)]
     pub session_timeout: Option<i64>,
+    #[serde(default)]
     pub administrators: Option<Vec<String>>,
+    #[serde(default)]
     pub expired_at: Option<String>,
     pub disabled: bool,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
@@ -57,12 +61,16 @@ pub struct NewRealm {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRealm {
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
     pub cacert: String,
     pub device_id_signing_key: String,
     pub device_id_verification_key: String,
+    #[serde(default)]
     pub session_timeout: Option<i64>,
+    #[serde(default)]
     pub administrators: Option<Vec<String>>,
+    #[serde(default)]
     pub expired_at: Option<String>,
     pub disabled: bool,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
@@ -77,15 +85,15 @@ pub struct UpdateRealm {
 pub struct Zone {
     pub name: String, // Zone name
     pub title: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>, // readOnly
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dns_provider: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub realm: Option<String>, // readOnly
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub acme_certificate_provider: Option<String>,
     #[serde(default = "Utc::now")]
     pub created_at: DateTime<Utc>,
@@ -99,8 +107,11 @@ pub struct Zone {
 pub struct NewZone {
     pub name: String,
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
     pub dns_provider: Option<String>,
+    #[serde(default)]
     pub acme_certificate_provider: Option<String>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,
@@ -113,8 +124,11 @@ pub struct NewZone {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateZone {
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
     pub dns_provider: Option<String>,
+    #[serde(default)]
     pub acme_certificate_provider: Option<String>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,
@@ -128,20 +142,20 @@ pub struct UpdateZone {
 pub struct Subdomain {
     pub name: String,
     pub title: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub realm: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub destination_realm: Option<String>,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub share_cookie: bool,
     // Read-only fields, populated on retrieval
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fqdn: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub zone: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>,
     #[serde(default = "Utc::now")]
     pub created_at: DateTime<Utc>,
@@ -155,8 +169,11 @@ pub struct Subdomain {
 pub struct NewSubdomain {
     pub name: String,
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
     pub realm: Option<String>,
+    #[serde(default)]
     pub destination_realm: Option<String>,
     #[serde(default)]
     pub share_cookie: bool,
@@ -171,8 +188,11 @@ pub struct NewSubdomain {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateSubdomain {
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
     pub realm: Option<String>,
+    #[serde(default)]
     pub destination_realm: Option<String>,
     #[serde(default)]
     pub share_cookie: bool,
@@ -188,26 +208,24 @@ pub struct UpdateSubdomain {
 pub struct VirtualHost {
     pub name: String,
     pub title: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub realm: Option<String>, // readOnly
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>, // readOnly
     pub subdomain: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub routing_chain: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub access_log_recorder: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub access_log_max_value_length: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub access_log_format: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub certificate: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub key: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub disabled: Option<bool>,
     #[serde(default = "Utc::now")]
     pub created_at: DateTime<Utc>,
@@ -231,8 +249,6 @@ pub struct VirtualHostResponse {
     pub fqdn: Option<String>,
     pub subdomain: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub routing_chain: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub access_log_recorder: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub access_log_max_value_length: Option<i32>,
@@ -254,15 +270,20 @@ pub struct VirtualHostResponse {
 pub struct NewVirtualHost {
     pub name: String,
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
     pub subdomain: String,
-    pub routing_chain: Option<String>,
+    #[serde(default)]
     pub access_log_recorder: Option<String>,
+    #[serde(default)]
     pub access_log_max_value_length: Option<i32>,
+    #[serde(default)]
     pub access_log_format: Option<serde_json::Value>,
     #[serde(default)]
     pub certificate: Option<String>,
+    #[serde(default)]
     pub key: Option<String>,
+    #[serde(default)]
     pub disabled: Option<bool>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,
@@ -275,15 +296,20 @@ pub struct NewVirtualHost {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateVirtualHost {
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
     pub subdomain: String,
-    pub routing_chain: Option<String>,
+    #[serde(default)]
     pub access_log_recorder: Option<String>,
+    #[serde(default)]
     pub access_log_max_value_length: Option<i32>,
+    #[serde(default)]
     pub access_log_format: Option<serde_json::Value>,
     #[serde(default)]
     pub certificate: Option<String>,
+    #[serde(default)]
     pub key: Option<String>,
+    #[serde(default)]
     pub disabled: Option<bool>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,
@@ -364,13 +390,13 @@ pub struct Rule {
 pub struct RoutingChain {
     pub name: String, // RoutingChain name
     pub title: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>, // readOnly
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub rules: Vec<Rule>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub realm: Option<String>, // readOnly
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -383,6 +409,7 @@ pub struct NewRoutingChain {
     #[serde(default)]
     pub name: Option<String>,
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub rules: Option<Vec<Rule>>,
@@ -397,6 +424,7 @@ pub struct NewRoutingChain {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRoutingChain {
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub rules: Option<Vec<Rule>>,
@@ -413,17 +441,17 @@ pub struct Hub {
     pub name: String, // Hub name
     pub title: String,
     pub fqdn: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub server_address: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub server_port: Option<u16>,
     pub server_cert: String,
     pub server_cert_key: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub realm: Option<String>, // readOnly
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub urn: Option<String>, // readOnly
     #[serde(default, skip_serializing_if = "serde_json::Value::is_null")]
     pub attributes: serde_json::Value,
@@ -440,10 +468,13 @@ pub struct NewHub {
     pub name: String,
     pub title: String,
     pub fqdn: String,
+    #[serde(default)]
     pub server_address: Option<String>,
+    #[serde(default)]
     pub server_port: Option<u16>,
     pub server_cert: String,
     pub server_cert_key: String,
+    #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub attributes: serde_json::Value,
@@ -459,10 +490,13 @@ pub struct NewHub {
 pub struct UpdateHub {
     pub title: String,
     pub fqdn: String,
+    #[serde(default)]
     pub server_address: Option<String>,
+    #[serde(default)]
     pub server_port: Option<u16>,
     pub server_cert: String,
     pub server_cert_key: String,
+    #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub attributes: serde_json::Value,
@@ -478,14 +512,14 @@ pub struct UpdateHub {
 pub struct Service {
     pub name: String, // Service name
     pub title: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     pub realm: String,
     pub provider: String,
     pub consumers: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub availability_management: Option<AvailabilityManagement>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub singleton: Option<bool>,
     // Read-only fields
     pub hub: String,
@@ -502,27 +536,27 @@ pub struct Service {
 pub struct AvailabilityManagement {
     pub cluster_manager_urn: String,
     pub service_id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub start_at: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stop_at: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ondemand_start_on_consumer: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ondemand_start_on_payload: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub idle_timeout: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub image: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub command: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub options: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub env: Option<HashMap<String, String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mount_points: Option<Vec<MountPoint>>,
 }
 
@@ -538,10 +572,13 @@ pub struct MountPoint {
 pub struct NewService {
     pub name: String,
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
     pub provider: String,
     pub consumers: Vec<String>,
+    #[serde(default)]
     pub availability_management: Option<AvailabilityManagement>,
+    #[serde(default)]
     pub singleton: Option<bool>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,
@@ -554,10 +591,13 @@ pub struct NewService {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateService {
     pub title: String,
+    #[serde(default)]
     pub description: Option<String>,
     pub provider: String,
     pub consumers: Vec<String>,
+    #[serde(default)]
     pub availability_management: Option<AvailabilityManagement>,
+    #[serde(default)]
     pub singleton: Option<bool>,
     #[serde(rename = "createdAt", default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<DateTime<Utc>>,

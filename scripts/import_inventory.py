@@ -38,19 +38,43 @@ def import_resource(resource_type, path, resource_data):
     """
     Import a resource (try to update, if not found, create).
     """
-    # Create a copy and remove 'name' as it's not needed in the PUT request body
-    update_payload = resource_data.copy()
-    if 'name' in update_payload:
-        del update_payload['name']
+    # Keys for nested resources that are handled by separate API calls.
+    # These should be removed from both POST and PUT payloads.
+    nested_keys = ['zones', 'subdomains', 'hubs', 'services', 'virtualHosts', 'routingChains']
+    
+    # Keys that are read-only or path parameters and should be excluded from the PUT body.
+    # 'name' is also excluded as it's in the path.
+
+    # --- Prepare payload for POST (create) ---
+    # The POST payload should not contain nested resource lists.
+    post_payload = resource_data.copy()
+    for key in nested_keys:
+        if key in post_payload:
+            del post_payload[key]
+
+    # --- Prepare payload for PUT (update) ---
+    update_payload = post_payload.copy()
+    
+    # Base keys to always remove from PUT body (they are in the URL path or server-managed)
+    keys_to_remove = ['name', 'urn', 'createdAt', 'updatedAt']
+    
+    # FQDN is read-only for VirtualHost and Subdomain, but editable for Hub.
+    if resource_type in ['VirtualHost', 'Subdomain']:
+        keys_to_remove.append('fqdn')
+
+    for key in keys_to_remove:
+        if key in update_payload:
+            del update_payload[key]
 
     # 1. First, try to update with PUT
     response = send_request('PUT', path, data=update_payload)
 
     # 2. If PUT fails with 404, create a new one with POST
     if response.status_code == 404:
-        print(f"INFO: '{resource_data['name']}' not found, creating new {resource_type}...")
-        # Use the original data containing 'name' for the POST request
-        send_request('POST', path.rsplit('/', 1)[0], data=resource_data)
+        resource_name = resource_data.get('name', path.split('/')[-1])
+        print(f"INFO: '{resource_name}' not found, creating new {resource_type}...")
+        # Use the prepared POST payload for creation
+        send_request('POST', path.rsplit('/', 1)[0], data=post_payload)
 
 def main(filepath):
     """Main processing"""
@@ -72,6 +96,8 @@ def main(filepath):
     for realm in data['realms']:
         realm_name = realm['name']
         realm_path = f"/realms/{realm_name}"
+        # For the top-level realm, we pass the whole realm object.
+        # import_resource will clean it.
         import_resource('Realm', realm_path, realm)
 
         # Zones and Subdomains

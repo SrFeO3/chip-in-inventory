@@ -24,7 +24,7 @@ services:
 
   # One-shot service to import initial data from sample.yaml
   importer:
-    image: python:3.9-slim
+    image: python:3.13.12-slim-trixie
     working_dir: /app
     volumes:
       - .:/app

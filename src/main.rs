@@ -166,7 +166,7 @@ impl IntoResponse for ApiError {
             },
             ApiError::Json(e) => {
                 tracing::error!("JSON error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "JSON processing error".to_string())
+                (StatusCode::INTERNAL_SERVER_ERROR, format!("JSON processing error: {}", e))
             },
             ApiError::NotFound => (StatusCode::NOT_FOUND, "Resource not found".to_string()),
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
@@ -656,9 +656,8 @@ async fn list_virtual_hosts(
 async fn resolve_vhost_fqdn(
     repo: &EtcdRepository,
     subdomain_urn: &str,
-    vhost_name: &str,
+    _vhost_name: &str, // The vhost name is not part of the FQDN in this model
 ) -> Result<Option<String>, ApiError> {
-    // URN format: urn:chip-in:subdomain:{realm-name}:{subdomain-name}
     // Correct URN format: urn:chip-in:subdomain:{realm-name}:{zone-name}:{subdomain-name}
     let parts: Vec<&str> = subdomain_urn.split(':').collect();
     if parts.len() == 6 && parts[0] == "urn" && parts[1] == "chip-in" && parts[2] == "subdomain" {
@@ -666,21 +665,9 @@ async fn resolve_vhost_fqdn(
         let zone_name = parts[4];
         let subdomain_name = parts[5];
 
+        // The get_subdomain handler populates the `fqdn` field based on the zone and subdomain names.
         if let Ok(subdomain) = repo.get_subdomain(realm_name, zone_name, subdomain_name).await {
-            let zone_fqdn = zone_name;
-            let subdomain_part = if subdomain.name == "@" {
-                "".to_string()
-            } else {
-                format!("{}.", subdomain.name)
-            };
-            let subdomain_fqdn = format!("{}{}", subdomain_part, zone_fqdn);
-
-            let vhost_fqdn = if vhost_name == "@" {
-                subdomain_fqdn
-            } else {
-                format!("{}.{}", vhost_name, subdomain_fqdn)
-            };
-            return Ok(Some(vhost_fqdn));
+            return Ok(subdomain.fqdn);
         }
     }
     Ok(None)
@@ -717,7 +704,6 @@ impl VirtualHost {
             urn: self.urn,
             fqdn,
             subdomain: self.subdomain,
-            routing_chain: self.routing_chain,
             access_log_recorder: self.access_log_recorder,
             access_log_max_value_length: self.access_log_max_value_length,
             access_log_format: self.access_log_format,
@@ -754,7 +740,6 @@ async fn create_virtual_host(
             realm_id, &vhost_name
         )),
         subdomain: payload.subdomain,
-        routing_chain: payload.routing_chain,
         access_log_recorder: payload.access_log_recorder,
         access_log_max_value_length: payload.access_log_max_value_length,
         access_log_format: payload.access_log_format,
@@ -804,7 +789,6 @@ async fn update_virtual_host(
     vhost.description = payload.description;
     vhost.title = payload.title;
     vhost.subdomain = payload.subdomain;
-    vhost.routing_chain = payload.routing_chain;
     vhost.access_log_recorder = payload.access_log_recorder;
     vhost.access_log_max_value_length = payload.access_log_max_value_length;
     vhost.access_log_format = payload.access_log_format;

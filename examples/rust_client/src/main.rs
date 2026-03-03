@@ -1,7 +1,7 @@
-// This is a sample Rust client for the chip-in-inventory API.
-// It demonstrates how to:
-// 1. Fetch all resources from the API and build a hierarchical in-memory representation.
-// 2. Use the in-memory data to perform a specific task, such as finding a matching routing action for a given request.
+// This example Rust client demonstrates how to interact with the chip-in-inventory API.
+// It performs two main tasks:
+// 1. Fetches all resources from the API to build a complete, hierarchical in-memory representation of the inventory.
+// 2. Uses this in-memory data to find a matching routing action for a given request FQDN and path.
 
 use serde::{Deserialize, Serialize};
 use reqwest::Error;
@@ -10,7 +10,7 @@ use futures::future::join_all;
 use std::collections::HashMap;
 
 // --- Data Structures based on OpenAPI schemas ---
-// This struct is defined based on the Realm.yaml schema specification.
+// Data structure for a Realm, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Realm {
@@ -37,6 +37,7 @@ struct Realm {
     urn: Option<String>,
 }
 
+// Data structure for a Zone, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Zone {
@@ -57,6 +58,7 @@ struct Zone {
     urn: Option<String>,
 }
 
+// Data structure for a Subdomain, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Subdomain {
@@ -79,6 +81,7 @@ struct Subdomain {
     fqdn: Option<String>,
 }
 
+// Data structure for a Hub, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Hub {
@@ -104,6 +107,7 @@ struct Hub {
     urn: Option<String>,
 }
 
+// Data structure for a Service, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Service {
@@ -126,6 +130,7 @@ struct Service {
     urn: Option<String>,
 }
 
+// Data structure for AvailabilityManagement, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct AvailabilityManagement {
@@ -155,6 +160,7 @@ struct AvailabilityManagement {
     mount_points: Option<Vec<MountPoint>>,
 }
 
+// Data structure for a MountPoint, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct MountPoint {
@@ -162,15 +168,15 @@ struct MountPoint {
     target: String,
 }
 
+// Data structure for a VirtualHost, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)] // Allow unused fields that are needed for deserialization
 struct VirtualHost {
     // Required fields
     name: String,
     title: String,
     subdomain: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    routing_chain: Option<String>,
 
     // Optional fields
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -189,10 +195,22 @@ struct VirtualHost {
     disabled: Option<bool>,
 
     // readOnly fields
+    // These fields are included in the server's response.
+    // `fqdn` is used in the client's logic, while the others are present to ensure successful deserialization.
+    // They are marked with `#[serde(skip_serializing)]` to exclude them from the final YAML output.
     #[serde(skip_serializing)]
     fqdn: Option<String>,
+    #[serde(skip_serializing)]
+    realm: Option<String>,
+    #[serde(skip_serializing)]
+    urn: Option<String>,
+    #[serde(skip_serializing)]
+    created_at: Option<String>,
+    #[serde(skip_serializing)]
+    updated_at: Option<String>,
 }
 
+// Data structure for a RoutingChain, based on the OpenAPI schema.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct RoutingChain {
@@ -207,6 +225,7 @@ struct RoutingChain {
     rules: Vec<Rule>,
 }
 
+// Data structure for a Rule within a RoutingChain.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 struct Rule {
     #[serde(rename = "match")]
@@ -214,6 +233,7 @@ struct Rule {
     action: Action,
 }
 
+// Data structure for a Proxy action.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Proxy {
@@ -222,12 +242,14 @@ struct Proxy {
     auth_scope_name: Option<String>,
 }
 
+// Data structure for a Redirect action.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Redirect {
     url: String,
 }
 
+// Data structure for a ReturnStaticText action.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct ReturnStaticText {
@@ -235,6 +257,7 @@ struct ReturnStaticText {
     status: u16,
 }
 
+// Data structure for a RequireAuthentication action.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct RequireAuthentication {
@@ -247,6 +270,7 @@ struct RequireAuthentication {
     oidc_token_endpoint: String,
 }
 
+// Data structure for a SetUpstreamRequestHeader action.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct SetUpstreamRequestHeader {
@@ -254,6 +278,7 @@ struct SetUpstreamRequestHeader {
     value: String,
 }
 
+// Data structure for a SetDownstreamResponseHeader action.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct SetDownstreamResponseHeader {
@@ -261,6 +286,7 @@ struct SetDownstreamResponseHeader {
     value: String,
 }
 
+// Enum representing all possible routing Actions.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 enum Action {
@@ -274,6 +300,7 @@ enum Action {
 
 // --- In-memory representation for hierarchical data (Nodes) ---
 
+/// Represents a Zone and its associated Subdomains.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ZoneNode {
@@ -282,6 +309,7 @@ struct ZoneNode {
     subdomains: Vec<Subdomain>,
 }
 
+/// Represents a Hub and its associated Services.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct HubNode {
@@ -290,6 +318,7 @@ struct HubNode {
     services: Vec<Service>,
 }
 
+/// Represents a Realm and all its nested resources.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct RealmNode {
@@ -301,127 +330,129 @@ struct RealmNode {
     routing_chains: Vec<RoutingChain>,
 }
 
+/// The root of the in-memory inventory structure.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Inventory {
     realms: Vec<RealmNode>,
 }
 
-/// Fetches the entire inventory from the API and builds a hierarchical representation.
-/// This function can replace the logic that loads configuration from a YAML file.
+/// Fetches all subdomains for a given zone.
+async fn fetch_subdomains_for_zone(client: &reqwest::Client, api_base_url: &str, realm_name: &str, zone: Zone) -> Result<ZoneNode, Error> {
+    let subdomains_url = format!("{}/realms/{}/zones/{}/subdomains", api_base_url, realm_name, zone.name);
+    let subdomains = client.get(&subdomains_url).send().await?.json::<Vec<Subdomain>>().await?;
+    Ok(ZoneNode { zone, subdomains })
+}
+
+/// Fetches all zones and their subdomains for a given realm.
+async fn fetch_zones_for_realm(client: &reqwest::Client, api_base_url: &str, realm_name: &str) -> Result<Vec<ZoneNode>, Error> {
+    let zones_url = format!("{}/realms/{}/zones", api_base_url, realm_name);
+    let zones = client.get(&zones_url).send().await?.json::<Vec<Zone>>().await?;
+
+    let tasks = zones.into_iter().map(|zone| {
+        fetch_subdomains_for_zone(client, api_base_url, realm_name, zone)
+    });
+
+    let results = join_all(tasks).await;
+    results.into_iter().collect() // Convert Vec<Result<T, E>> to Result<Vec<T>, E>
+}
+
+/// Fetches all services for a given hub.
+async fn fetch_services_for_hub(client: &reqwest::Client, api_base_url: &str, realm_name: &str, hub: Hub) -> Result<HubNode, Error> {
+    let services_url = format!("{}/realms/{}/hubs/{}/services", api_base_url, realm_name, hub.name);
+    let services = client.get(&services_url).send().await?.json::<Vec<Service>>().await?;
+    Ok(HubNode { hub, services })
+}
+
+/// Fetches all hubs and their services for a given realm.
+async fn fetch_hubs_for_realm(client: &reqwest::Client, api_base_url: &str, realm_name: &str) -> Result<Vec<HubNode>, Error> {
+    let hubs_url = format!("{}/realms/{}/hubs", api_base_url, realm_name);
+    let hubs = client.get(&hubs_url).send().await?.json::<Vec<Hub>>().await?;
+
+    let tasks = hubs.into_iter().map(|hub| {
+        fetch_services_for_hub(client, api_base_url, realm_name, hub)
+    });
+
+    let results = join_all(tasks).await;
+    results.into_iter().collect()
+}
+
+/// Fetches all sub-resources for a given realm and builds a RealmNode.
+async fn build_realm_node(client: Arc<reqwest::Client>, api_base_url: String, realm: Realm) -> Result<RealmNode, Error> {
+    let realm_name = realm.name.clone();
+
+    // Use try_join! to run futures in parallel and propagate errors.
+    let (zones, hubs, virtual_hosts, routing_chains) = futures::try_join!(
+        fetch_zones_for_realm(&client, &api_base_url, &realm_name),
+        fetch_hubs_for_realm(&client, &api_base_url, &realm_name),
+        async {
+            let url = format!("{}/realms/{}/virtual-hosts", api_base_url, realm_name);
+            client.get(&url).send().await?.json::<Vec<VirtualHost>>().await
+        },
+        async {
+            let url = format!("{}/realms/{}/routing-chains", api_base_url, realm_name);
+            client.get(&url).send().await?.json::<Vec<RoutingChain>>().await
+        }
+    )?;
+
+    Ok(RealmNode {
+        realm,
+        zones,
+        hubs,
+        virtual_hosts,
+        routing_chains,
+    })
+}
+
+/// Fetches the entire inventory from the API and builds a hierarchical in-memory representation.
 async fn load_inventory(api_base_url: &str) -> Result<Vec<RealmNode>, Error> {
     let client = Arc::new(reqwest::Client::new());
 
-    let realms: Vec<Realm> = client
-        .get(&format!("{}/realms", api_base_url))
-        .send()
-        .await?
-        .json()
-        .await?;
+    let realms_url = format!("{}/realms", api_base_url);
+    let realms: Vec<Realm> = client.get(&realms_url).send().await?.json().await?;
 
     if realms.is_empty() {
         return Ok(vec![]);
     }
 
-    // For each realm, fetch its sub-resources and build an in-memory representation.
-    let mut tasks = Vec::new();
-    for realm in realms {
+    // For each realm, spawn a task to fetch its sub-resources in parallel.
+    let tasks = realms.into_iter().map(|realm| {
         let client_clone = Arc::clone(&client);
         let api_base_url_clone = api_base_url.to_string();
-        let task = tokio::spawn(async move {
-            // --- Fetch Zones and their Subdomains ---
-            let mut zone_nodes = Vec::new();
-            let zones_url = format!("{}/realms/{}/zones", api_base_url_clone, realm.name);
-            if let Ok(zones) = async { client_clone.get(&zones_url).send().await?.json::<Vec<Zone>>().await }.await {
-                let mut sub_tasks = Vec::new();
-                for zone in zones {
-                    let client_clone2 = Arc::clone(&client_clone);
-                    let api_base_url_clone2 = api_base_url_clone.to_string();
-                    let realm_name = realm.name.clone();
-                    sub_tasks.push(tokio::spawn(async move {
-                        let mut subdomains = Vec::new();
-                        let subdomains_url = format!("{}/realms/{}/zones/{}/subdomains", api_base_url_clone2, realm_name, zone.name);
-                        if let Ok(fetched_subdomains) = async { client_clone2.get(&subdomains_url).send().await?.json::<Vec<Subdomain>>().await }.await {
-                           subdomains = fetched_subdomains;
-                        }
-                        ZoneNode { zone, subdomains }
-                    }));
-                }
-                zone_nodes = join_all(sub_tasks).await.into_iter().filter_map(Result::ok).collect();
-            }
-
-            // --- Fetch Hubs and their Services ---
-            let mut hub_nodes = Vec::new();
-            let hubs_url = format!("{}/realms/{}/hubs", api_base_url_clone, realm.name);
-            if let Ok(hubs) = async { client_clone.get(&hubs_url).send().await?.json::<Vec<Hub>>().await }.await {
-                let mut sub_tasks = Vec::new();
-                for hub in hubs {
-                    let client_clone2 = Arc::clone(&client_clone);
-                    let api_base_url_clone2 = api_base_url_clone.to_string();
-                    let realm_name = realm.name.clone();
-                    sub_tasks.push(tokio::spawn(async move {
-                        let mut services = Vec::new();
-                        let services_url = format!("{}/realms/{}/hubs/{}/services", api_base_url_clone2, realm_name, hub.name);
-                        if let Ok(fetched_services) = async { client_clone2.get(&services_url).send().await?.json::<Vec<Service>>().await }.await {
-                            services = fetched_services;
-                        }
-                        HubNode { hub, services }
-                    }));
-                }
-                hub_nodes = join_all(sub_tasks).await.into_iter().filter_map(Result::ok).collect();
-            }
-
-            // --- Fetch Virtual Hosts ---
-            let vhosts_url = format!("{}/realms/{}/virtual-hosts", api_base_url_clone, realm.name);
-            let virtual_hosts = async { client_clone.get(&vhosts_url).send().await?.json::<Vec<VirtualHost>>().await }
-                .await
-                .unwrap_or_default();
-
-            // --- Fetch Routing Chains ---
-            let rchains_url = format!("{}/realms/{}/routing-chains", api_base_url_clone, realm.name);
-            let routing_chains = async { client_clone.get(&rchains_url).send().await?.json::<Vec<RoutingChain>>().await }
-                .await
-                .unwrap_or_default();
-
-            // Return the fully populated in-memory realm object
-            RealmNode {
-                realm,
-                zones: zone_nodes,
-                hubs: hub_nodes,
-                virtual_hosts,
-                routing_chains,
-            }
-        });
-        tasks.push(task);
-    }
+        tokio::spawn(build_realm_node(client_clone, api_base_url_clone, realm))
+    });
 
     // Wait for all realm-specific tasks to complete and collect the results
-    let realm_nodes: Vec<RealmNode> = join_all(tasks).await.into_iter().filter_map(Result::ok).collect();
-    Ok(realm_nodes)
+    let results: Vec<Result<RealmNode, Error>> = join_all(tasks).await.into_iter()
+        .map(|res| res.unwrap()) // Unwrap the JoinHandle result
+        .collect();
+
+    // Convert Vec<Result<T, E>> to a single Result<Vec<T>, E>
+    results.into_iter().collect()
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let api_base_url = "http://localhost:3000/v1";
 
-    // --- Phase 1: Fetching all data from the API ---
+    // --- Phase 1: Fetch all data from the API ---
     println!("--- Phase 1: Fetching all data from the API ---\n");
     println!("Connecting to {} ...", api_base_url);
 
     let realm_nodes = load_inventory(api_base_url).await?;
     println!("Successfully loaded inventory with {} realm(s).", realm_nodes.len());
 
-    println!("\n--- Phase 2: Usage Phase (Displaying hierarchical data) ---\n");
+    println!("\n--- Phase 2: Displaying the fetched hierarchical data as YAML ---\n");
 
     let inventory = Inventory { realms: realm_nodes.into_iter().collect() };
 
     match serde_yaml::to_string(&inventory) {
         Ok(yaml) => println!("{}", yaml),
-        Err(e) => eprintln!("Failed to serialize to YAML: {}", e),
+        Err(e) => eprintln!("Error: Failed to serialize inventory to YAML: {}", e),
     }
 
-    // --- Phase 3: Usage Phase (Find a matching action from a routing-chain) ---
-    println!("\n--- Phase 3: Usage Phase (Find a matching action) ---\n");
+    // --- Phase 3: Find a matching action from a routing chain ---
+    println!("\n--- Phase 3: Finding a matching routing action ---\n");
 
     // Sample input: FQDN and path
     let sample_fqdn = "sirius.sr.example.com";
@@ -429,12 +460,29 @@ async fn main() -> Result<(), Error> {
 
     println!("Searching for an action for FQDN: '{}' and Path: '{}'...", sample_fqdn, sample_path);
 
-    match find_matching_action(&inventory.realms, sample_fqdn, sample_path) {
+    // Find the realm that contains the virtual host matching the FQDN.
+    // Then, get its (single) routing chain and find the first rule that matches the request.
+    let action = inventory.realms.iter()
+        .find(|r_node| r_node.virtual_hosts.iter().any(|v| v.fqdn.as_deref() == Some(sample_fqdn)))
+        .and_then(|r_node| r_node.routing_chains.first())
+        .and_then(|rchain| {
+            rchain.rules.iter()
+                .find(|rule| {
+                    // This is a placeholder for rule evaluation logic.
+                    // A real implementation would parse and evaluate the `match_condition`.
+                    // For this example, we just print the condition and return true to find the first action.
+                    println!("    [Mock Evaluation] Checking condition: '{}'", &rule.match_condition);
+                    true
+                })
+                .map(|rule| rule.action.clone())
+        });
+
+    match action {
         Some(action) => {
             println!("\nFound a matching action:");
             match serde_yaml::to_string(&action) {
                 Ok(yaml) => println!("{}", yaml),
-                Err(e) => eprintln!("Failed to serialize action to YAML: {}", e),
+                Err(e) => eprintln!("Error: Failed to serialize action to YAML: {}", e),
             }
         }
         None => {
@@ -443,37 +491,4 @@ async fn main() -> Result<(), Error> {
     }
 
     Ok(())
-}
-
-/// Finds a matching action for a given FQDN and path from the in-memory data.
-fn find_matching_action(realm_nodes: &[RealmNode], fqdn: &str, path: &str) -> Option<Action> {
-    for r_node in realm_nodes {
-        // 1. Find the VirtualHost that matches the FQDN.
-        if let Some(vhost) = r_node.virtual_hosts.iter().find(|v| v.fqdn.as_deref() == Some(fqdn)) {
-            // 2. Find the RoutingChain associated with the VirtualHost.
-            if let Some(rc_name) = &vhost.routing_chain {
-                if let Some(rchain) = r_node.routing_chains.iter().find(|rc| &rc.name == rc_name) {
-                    // 3. Iterate through the rules of the RoutingChain to find a match.
-                    for rule in &rchain.rules {
-                        if rule_matches(&rule.match_condition, fqdn, path) {
-                            // 4. If a rule matches, return its action.
-                            return Some(rule.action.clone());
-                        }
-                    }
-                }
-            }
-        }
-    }
-    // If no match is found, return None.
-    None
-}
-
-/// A simple helper to evaluate if a rule's match condition is met.
-/// This is a placeholder implementation.
-fn rule_matches(match_condition: &str, _fqdn: &str, _path: &str) -> bool {
-    // In a real implementation, you would parse the 'match_condition' string (e.g., using a parser combinator or a scripting engine)
-    // and evaluate it against the request context (FQDN, path, headers, etc.).
-    // For this example, we'll just print the condition and return true to demonstrate the flow.
-    println!("    [Mock Evaluation] Checking condition: '{}'", match_condition);
-    true
 }
